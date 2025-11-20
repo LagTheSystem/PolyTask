@@ -126,23 +126,65 @@ body {
 .input-wrapper input:focus {
     text-align: left;
 }
+/* Wrapper for the floating action buttons */
+#createTaskBtn-wrapper {
+    position: fixed;
+    right: 18px;
+    bottom: 28px;
+    width: 56px;
+    height: 56px;
+    z-index: 1000;
+    /* Ensure the popup can be seen when it moves outside */
+    display: flex;
+    justify-content: center;
+}
+
+/* The schedule/clock button sitting on top */
+#createTaskBtn-popup {
+    position: absolute;
+    bottom: 48px; /* Start slightly tucked in */
+    width: 28px; /* Half width of 56px */
+    height: 28px;
+    background-color: #d1d5db; /* Lighter Gray */
+    color: white;
+    border-radius: 14px 14px 0 0; /* Circle top */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all .2s ease-out;
+    opacity: 0;
+    transform: translateY(20px); /* Push down to hide behind button */
+    z-index: 0;
+    pointer-events: none;
+}
+
+#createTaskBtn-wrapper:hover #createTaskBtn-popup {
+    opacity: 1;
+    transform: translateY(0);
+    bottom: 56px; /* Move to full height above button */
+    pointer-events: auto;
+}
+
+#createTaskBtn-popup:hover {
+    background-color: #e5e7eb;
+}
+
 #createTaskBtn{
     width: 56px;
     height: 56px;
     font-size: 28px;
     font-weight: 700;
-    /* square button: small corner radius for a subtle look */
-    border-radius: 0.6rem;
+    border-radius: 6px; /* Square with rounded corners */
     box-shadow: 0 6px 18px rgba(16,24,40,0.1);
     background: none;
     background-color: var(--celadon);
     color: white;
     border: none;
     cursor: pointer;
-    transition: transform .12s ease, box-shadow .12s ease, background-color .12s ease;
-    position: fixed;
-    right: 18px;
-    bottom: 28px;
+    transition: transform .12s ease, background-color .12s ease;
+    position: relative;
+    z-index: 1;
     /* ensure perfect centering for the + glyph */
     display: inline-flex;
     align-items: center;
@@ -398,6 +440,7 @@ section {
 /* Make any .card that is rendered inside the calendar grid stretch to the full grid width
    (the renderer creates a nested .card element; default .card width is narrow, so override it here) */
 .card.calendar-large .calendar-grid > .calendar-inner {
+    grid-column: 1 / -1;
     width: 100%;
     margin: 0 0 1rem 0; /* keep a small vertical gap but remove horizontal centering margin */
     box-sizing: border-box;
@@ -413,7 +456,13 @@ section {
 .day-grid { display: flex; gap: 12px; align-items: flex-start; }
 .day-grid .time-column { width: 72px; flex: 0 0 72px; border-right: 1px solid rgba(16,24,40,0.06); box-sizing: border-box; padding-right: 10px; }
 .day-grid .time-slot { height: 48px; display:flex; align-items:center; font-size:0.875rem; color:var(--muted); padding-left:6px; }
-.day-grid .events-column { flex: 1 1 auto; min-width: 0; padding-left: 12px; }
+.day-grid .events-column { 
+    flex: 1 1 auto; 
+    min-width: 0; 
+    padding-left: 12px;
+    background-image: linear-gradient(to bottom, transparent 47px, rgba(16,24,40,0.06) 47px);
+    background-size: 100% 48px;
+}
 .day-grid .events-column .event-card { padding: 12px; margin-bottom: 8px; background: var(--card-bg); border-radius: 6px; box-sizing: border-box; width: 100%; }
 
 /* Responsive: stack time column above events on small screens to avoid cramped text */

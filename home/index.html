@@ -22,12 +22,22 @@
   <div id="calendar" class="calendar-grid" aria-live="polite"></div>
 
   <!-- floating create button (use inline SVG for consistent centering) -->
-  <button id="createTaskBtn" title="Create task" class="icon-btn" aria-label="Create task">
-    <!-- plus SVG -->
-    <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false">
-      <path d="M11 11V5a1 1 0 1 1 2 0v6h6a1 1 0 1 1 0 2h-6v6a1 1 0 1 1-2 0v-6H5a1 1 0 1 1 0-2h6z" fill="currentColor" />
-    </svg>
-  </button>
+  <div id="createTaskBtn-wrapper">
+    <button id="createTaskBtn" title="Create task" class="icon-btn" aria-label="Create task">
+      <!-- plus SVG -->
+      <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false">
+        <path d="M11 11V5a1 1 0 1 1 2 0v6h6a1 1 0 1 1 0 2h-6v6a1 1 0 1 1-2 0v-6H5a1 1 0 1 1 0-2h6z" fill="currentColor" />
+      </svg>
+    </button>
+    <div id="createTaskBtn-popup">
+      <span class="clock-icon">
+        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false">
+          <circle cx="12" cy="12" r="9" stroke="#888" stroke-width="2" fill="none" />
+          <path d="M12 7v5l3 2" stroke="#888" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+        </svg>
+      </span>
+    </div>
+  </div>
 
     <!-- creation modal -->
     <div id="taskModal" style="display:none;position:fixed;inset:0;align-items:center;justify-content:center;background:rgba(0,0,0,0.35);">
@@ -46,10 +56,6 @@
             <input id="taskEstimateMinutes" name="estimateMinutes" type="number" min="1" step="1" placeholder=" " />
             <label for="taskEstimateMinutes">Estimated time (minutes)</label>
           </div>
-          <div class="input-wrapper">
-            <input id="taskCategory" name="category" type="text" maxlength="20" placeholder=" " />
-            <label for="taskCategory">Category (optional)</label>
-          </div>
           <div style="display:flex;gap:.5rem;justify-content:flex-end;margin-top:8px;">
             <button type="button" id="cancelTask" class="btn-outline">Cancel</button>
             <button type="submit" class="btn">Save</button>
@@ -58,6 +64,124 @@
       </div>
     </div>
 
+    <!-- define schedule modal (same style as task modal) -->
+    <div id="defineScheduleModal" style="display:none;position:fixed;inset:0;align-items:center;justify-content:center;background:rgba(0,0,0,0.35);z-index:100;">
+      <div class="card schedule-modal" style="width:720px;max-width:calc(100% - 2rem);">
+        <h2>Define Schedule</h2>
+        <form id="scheduleForm">
+          <p class="lead" style="margin-top:0;margin-bottom:.5rem;">Add one or more time ranges for each weekday. We'll create gray "Blocked time" events for this week.</p>
+          <div class="schedule-grid">
+            <div class="day-label">Sunday</div>
+            <div class="day-intervals" data-day="0">
+              <div class="intervals"></div>
+              <button type="button" class="add-interval" data-day="0">+ Add time</button>
+            </div>
+
+            <div class="day-label">Monday</div>
+            <div class="day-intervals" data-day="1">
+              <div class="intervals"></div>
+              <button type="button" class="add-interval" data-day="1">+ Add time</button>
+            </div>
+
+            <div class="day-label">Tuesday</div>
+            <div class="day-intervals" data-day="2">
+              <div class="intervals"></div>
+              <button type="button" class="add-interval" data-day="2">+ Add time</button>
+            </div>
+
+            <div class="day-label">Wednesday</div>
+            <div class="day-intervals" data-day="3">
+              <div class="intervals"></div>
+              <button type="button" class="add-interval" data-day="3">+ Add time</button>
+            </div>
+
+            <div class="day-label">Thursday</div>
+            <div class="day-intervals" data-day="4">
+              <div class="intervals"></div>
+              <button type="button" class="add-interval" data-day="4">+ Add time</button>
+            </div>
+
+            <div class="day-label">Friday</div>
+            <div class="day-intervals" data-day="5">
+              <div class="intervals"></div>
+              <button type="button" class="add-interval" data-day="5">+ Add time</button>
+            </div>
+
+            <div class="day-label">Saturday</div>
+            <div class="day-intervals" data-day="6">
+              <div class="intervals"></div>
+              <button type="button" class="add-interval" data-day="6">+ Add time</button>
+            </div>
+          </div>
+
+          <div class="actions-wrapper" style="position:sticky;bottom:0;display:flex;align-items:center;justify-content:space-between;margin-top:12px;gap:8px;">
+            <label style="display:flex;align-items:center;gap:8px;">
+              <input type="checkbox" id="repeatWeekly" checked /> Repeat weekly
+            </label>
+            <div class="actions" style="display:flex;gap:.5rem;justify-content:flex-end;">
+            <button type="button" id="cancelSchedule" class="btn-outline">Cancel</button>
+            <button type="submit" id="saveSchedule" class="btn">Save schedule</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- edit event modal -->
+    <div id="editEventModal" style="display:none;position:fixed;inset:0;align-items:center;justify-content:center;background:rgba(0,0,0,0.35);z-index:110;">
+      <div class="card" style="width:750px;max-width:calc(100% - 2rem);">
+        <h2>Edit event</h2>
+        <form id="editEventForm">
+          <input type="hidden" id="editDocId" />
+          <div class="input-wrapper">
+            <input id="editTitle" type="text" required placeholder=" " />
+            <label for="editTitle">Title</label>
+          </div>
+          <div class="input-row" style="display:flex;gap:.5rem;">
+            <div class="input-wrapper" style="width:200px;">
+              <input id="editDate" type="date" required placeholder=" " />
+              <label for="editDate">Date</label>
+            </div>
+            <div class="input-wrapper" style="flex:1;">
+              <input id="editStart" type="time" required placeholder=" " />
+              <label for="editStart">Start</label>
+            </div>
+          </div>
+          <div class="input-row" style="display:flex;gap:.5rem;">
+            <div class="input-wrapper" style="flex:1;">
+              <input id="editDuration" type="number" min="1" step="1" placeholder=" " />
+              <label for="editDuration">Duration (min)</label>
+            </div>
+            <div class="input-wrapper" style="flex:1;">
+              <input id="editColor" type="color" value="#3b82f6" />
+              <label for="editColor">Color</label>
+            </div>
+          </div>
+          <div class="input-wrapper">
+            <input id="editCategory" type="text" maxlength="20" placeholder=" " />
+            <label for="editCategory">Category</label>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px;">
+            <label style="display:flex;align-items:center;gap:8px;">
+              <input id="editRepeatWeekly" type="checkbox" /> Repeat weekly
+            </label>
+            <label style="display:flex;align-items:center;gap:8px;">
+              <input id="editCompleted" type="checkbox" /> Completed
+            </label>
+          </div>
+          <div style="display:flex;gap:.5rem;justify-content:flex-end;margin-top:12px;">
+            <button type="button" id="cancelEditEvent" class="btn-outline">Cancel</button>
+            <button type="submit" class="btn">Save</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
   </main>
+  
 </body>
+<footer>
+    <p>2025 PolyTask. Made with &#10084; by Neal Sharma</p>
+    <i class="fab fa-github"></i>
+</footer>
 </html>
