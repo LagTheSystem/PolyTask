@@ -156,10 +156,16 @@
   <script>
     document.addEventListener('DOMContentLoaded', async () => {
         try {
-            // Wait for PolyTask init (it runs automatically)
-            // But we need to use the exposed methods
-            // We can poll or just run an async wrapper
-            await window.PolyTask.init(); 
+            // Wait for PolyTask to be available if module loading is slow
+            if (!window.PolyTask) {
+                 // Simple poll wait
+                 await new Promise(r => {
+                    const i = setInterval(() => {
+                        if(window.PolyTask) { clearInterval(i); r(); }
+                    }, 50);
+                 });
+            }
+
             const user = await PolyTask.getCurrentUserId();
             if(!user) {
                 window.location.href = '../login/index.html'; // Assuming login is here or root

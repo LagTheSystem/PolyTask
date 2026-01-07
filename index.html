@@ -3,52 +3,123 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PolyTask</title>
+    <title>PolyTask — Smart Task Management</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/appwrite@21.4.0"></script>
     <link rel="stylesheet" href="styles.css">
     <script type="module" src="script.js"></script>
+    <style>
+        /* Landing specific styles */
+        .hero {
+            padding: 8rem 2rem;
+            text-align: center;
+            background: linear-gradient(180deg, var(--bg) 0%, color-mix(in srgb, var(--primary) 5%, transparent) 100%);
+        }
+        .hero h1 {
+            font-size: 3.5rem;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 800;
+        }
+        .hero p.lead {
+            font-size: 1.25rem;
+            color: var(--muted);
+            max-width: 600px;
+            margin: 0 auto 3rem;
+            line-height: 1.6;
+        }
+        .cta-group {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+        }
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            padding: 4rem 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .feature-card {
+            background: var(--card-bg);
+            padding: 2rem;
+            border-radius: var(--radius);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            transition: transform 0.2s;
+            border: 1px solid var(--border-color, rgba(0,0,0,0.05));
+        }
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+        .feature-icon {
+            width: 48px;
+            height: 48px;
+            background: color-mix(in srgb, var(--primary) 10%, transparent);
+            color: var(--primary);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        footer {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: var(--muted);
+            border-top: 1px solid var(--border-color, rgba(0,0,0,0.05));
+        }
+    </style>
 </head>
 <body>
+    <header style="display:flex; justify-content:space-between; align-items:center; padding: 1.5rem 2rem; max-width: 1200px; margin: 0 auto; width: 100%;">
+        <div style="font-weight: 700; font-size: 1.5rem; color: var(--primary); display:flex; align-items:center; gap:0.5rem;">
+            <i class="fas fa-layer-group"></i> PolyTask
+        </div>
+        <div style="display:flex; align-items:center; gap:1rem;">
+             <label style="cursor:pointer; display:flex; align-items:center;" title="Toggle Dark Mode">
+                 <input type="checkbox" id="dmToggle" class="dm-toggle" style="display:none">
+                 <svg viewBox="0 0 24 24" width="20" height="20" fill="none" class="dm-icon" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+             </label>
+             <a href="login/" class="btn-outline" style="text-decoration:none;">Log in</a>
+             <a href="signup/" class="btn primary" style="text-decoration:none;">Sign Up</a>
+        </div>
+    </header>
+
     <main>
         <section class="hero">
-            <div class="hero-content">
-                <h1>Welcome to PolyTask</h1>
-                <p class="lead">Smart task planning, focused work sessions, and lightweight project management — tailored to how you work.</p>
-
-                <div class="cta-row">
-                    <button class="btn" type="button" onclick="location.href='/signup'">Get Started</button>
-                    <button class="btn btn-outline" type="button" onclick="location.href='/dashboard/'">Sign in</button>
-                </div>
+            <h1>Master Your Time.</h1>
+            <p class="lead">Smart task planning, focused work sessions, and lightweight project management — tailored to your flow.</p>
+            <div class="cta-group">
+                <a href="signup/" class="btn primary" style="font-size:1.1rem; padding: 0.8rem 2rem;">Get Started</a>
+                <a href="dashboard/" class="btn-outline" style="font-size:1.1rem; padding: 0.8rem 2rem;">View Demo</a>
             </div>
         </section>
 
-        <section class="features card" aria-label="Features">
-            <h2>What PolyTask gives you</h2>
-            <div class="features-grid">
-                <div class="feature">
-                    <h3>Smart planning</h3>
-                    <p>Auto-schedule tasks based on priorities, deadlines and availability so you always know what to do next.</p>
-                </div>
-                <div class="feature">
-                    <h3>Focus tools</h3>
-                    <p>Built-in timers and distraction blockers help you get into a flow and stay there.</p>
-                </div>
-                <div class="feature">
-                    <h3>Custom workflows</h3>
-                    <p>Create templates, tags, and filters that match how you actually work.</p>
-                </div>
-                <div class="feature">
-                    <h3>Privacy & security</h3>
-                    <p>Options for private project boards and encrypted notes keep your data safe.</p>
-                </div>
+        <section class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon"><i class="fas fa-magic"></i></div>
+                <h3>Smart Input</h3>
+                <p style="color:var(--muted)">Just type "Meeting tomorrow at 3pm for 1h" and let our NLP engine handle the details.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon"><i class="fas fa-calendar-day"></i></div>
+                <h3>Visual Planner</h3>
+                <p style="color:var(--muted)">Drag and drop tasks onto your day timeline. Visualize your workload and avoid burnout.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon"><i class="fas fa-stopwatch"></i></div>
+                <h3>Focus Timer</h3>
+                <p style="color:var(--muted)">Built-in Pomodoro-style timer that syncs across tabs and keeps you in the flow.</p>
             </div>
         </section>
     </main>
+
     <footer>
-        <p>2025 PolyTask. Made with &#10084; by Neal Sharma</p>
-        <i class="fab fa-github"></i>
+        <p>&copy; 2024 PolyTask. Built for productivity.</p>
     </footer>
 </body>
 </html>
-<!--Add tasks being pulled from google classroom/email-->

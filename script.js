@@ -304,6 +304,25 @@ document.addEventListener('DOMContentLoaded', () => {
 		}
 
 		// --- small helpers --------------------------------------------------
+		function fireConfetti() {
+			const colors = ['#EF6F6C', '#465775', '#F7B074', '#FFF07C', '#ACDD91', '#59C9A5'];
+			for (let i = 0; i < 40; i++) {
+				const el = document.createElement('div');
+				el.className = 'confetti';
+				// Random start position near top (rain effect)
+				el.style.left = Math.random() * 100 + 'vw';
+				el.style.top = '-10px';
+				el.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+				// Random fall speed and delay
+				const duration = Math.random() * 1.5 + 1.5; 
+				el.style.animation = `fall ${duration}s linear forwards`;
+				el.style.animationDelay = (Math.random() * 0.5) + 's';
+				
+				document.body.appendChild(el);
+				setTimeout(() => el.remove(), (duration + 1) * 1000);
+			}
+		}
+
 		function showToast(message, type = 'info', action = null) {
 			let container = document.getElementById('toast-container');
 			if (!container) {
@@ -1173,7 +1192,7 @@ document.addEventListener('DOMContentLoaded', () => {
 			}
 
 			const firstSlot = timeCol.querySelector('.time-slot');
-			const slotHeight = firstSlot ? firstSlot.clientHeight : 20; // height per 15-minute slot
+			const slotHeight = (firstSlot && firstSlot.clientHeight > 0) ? firstSlot.clientHeight : 48; // fallback to CSS height 48px
 			const dayHeight = slotHeight * 72; // 72 quarters in our visible range (06:00-24:00)
 			// events layer
 			const layer = eventsCol.querySelector('.events-layer') || document.createElement('div');
@@ -1666,6 +1685,7 @@ document.addEventListener('DOMContentLoaded', () => {
 						const gray = resolveColor('gray');
 						card.style.background = gray;
 						card.style.color = textColorFor(gray);
+						fireConfetti(); // Celebrate!
 						await updateUserTask(it.id, { complete: true, color: 'gray' });
 						await loadAndRender();
 					} catch (e) {
@@ -1851,6 +1871,23 @@ document.addEventListener('DOMContentLoaded', () => {
 			const lower = text.toLowerCase();
 			const now = new Date();
 
+			// --- Duration parsing ---
+			// Explicit: "for 30m", "for 1h", "20 mins"
+			const durRegex = /\b(?:for\s+)?(\d+(?:\.\d+)?)\s*(m|min|mins|minutes|h|hr|hours)\b/i;
+			const durMatch = text.match(durRegex);
+			if (durMatch) {
+				const val = parseFloat(durMatch[1]);
+				const unit = durMatch[2].toLowerCase().startsWith('h') ? 60 : 1;
+				result.duration = Math.round(val * unit);
+				result.title = result.title.replace(durMatch[0], '');
+			} else {
+				// Implicit heuristics
+				if (/\b(quick|chat|check|email|standup)\b/i.test(text)) result.duration = 15;
+				else if (/\b(call|meeting|sync|discussion)\b/i.test(text)) result.duration = 30;
+				else if (/\b(review|draft|analysis)\b/i.test(text)) result.duration = 45;
+				else if (/\b(deep|focus|write|code|coding|plan|lab)\b/i.test(text)) result.duration = 60;
+			}
+
 			// 1. Time parsing (e.g. 5pm, 5:30pm, 17:00, 5 am)
 			// Matches: 5:30pm, 5pm, 5 pm, 5:30, 17:00
 			const timeRegex = /(\d{1,2})(?::(\d{2}))?\s*(am|pm|a\.m\.|p\.m\.)?/i;
@@ -1911,22 +1948,6 @@ document.addEventListener('DOMContentLoaded', () => {
 				result.date = formatDateISO(targetDate);
 			} else {
 				// Default to currently viewed day logic handling by caller, or today
-			}
-
-			// 3. Duration parsing (30m, 1h, 1.5 hours)
-			const durRegex = /(\d+(?:\.\d+)?)\s*(m|min|mins|minute|minutes|h|hr|hrs|hour|hours)\b/i;
-			const durMatch = text.match(durRegex);
-			if (durMatch) {
-				const [match, val, unit] = durMatch;
-				const num = parseFloat(val);
-				let minutes = 60;
-				if (unit.startsWith('h')) minutes = Math.round(num * 60);
-				else minutes = Math.round(num);
-				
-				if (minutes > 0) {
-					result.duration = minutes;
-					result.title = result.title.replace(match, '');
-				}
 			}
 
 			// Cleanup title
@@ -2095,74 +2116,105 @@ document.addEventListener('DOMContentLoaded', () => {
 		}
 
 		// --- local notifications -------------------------------------------
-		async function checkDueTasks() {
-			if (!('Notification' in window) || Notification.permission !== 'granted') return;
+		// Duplicate checkDueTasks removed.
 
-			try {
-				const tasks = await listUserTasks();
-				const now = new Date();
-				const fifteenMinsLater = new Date(now.getTime() + 15 * 60000);
-
-				tasks.forEach(task => {
-					if (task.complete || !task.due) return;
-					
-					const dueDate = new Date(task.due);
-					// Check if due in the future (now < dueDate) AND within 15 mins (dueDate <= fifteenMinsLater)
-					if (dueDate > now && dueDate <= fifteenMinsLater) {
-						const notifiedKey = `notified_task_${task.$id}`;
-						if (!sessionStorage.getItem(notifiedKey)) {
-							const n = new Notification(`Due Soon: ${task.name}`, {
-								body: `Due at ${dueDate.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}`,
-							});
-							sessionStorage.setItem(notifiedKey, 'true');
-						}
-					}
-				});
-			} catch (err) {
-				console.error('Error checking due tasks:', err);
-			}
-		}
 
 		// --- Focus Timer ---
 		let focusInterval = null;
 		let focusTime = 25 * 60;
 		let isFocusing = false;
+		let focusTarget = null;
+		const FOCUS_KEY = 'pt_focus_state';
+
+		function loadFocusState() {
+			try {
+				const saved = sessionStorage.getItem(FOCUS_KEY);
+				if (saved) {
+					const data = JSON.parse(saved);
+					if (data.isFocusing && data.target) {
+						const now = Date.now();
+						const remaining = Math.ceil((data.target - now) / 1000);
+						if (remaining > 0) {
+							focusTime = remaining;
+							focusTarget = data.target;
+							isFocusing = true;
+							startFocusInterval();
+						} else {
+							focusTime = 25*60; 
+							isFocusing = false;
+						}
+					} else if (data.timeLeft) {
+						focusTime = data.timeLeft;
+					}
+				}
+			} catch(e) { console.error(e); }
+			updateFocusDisplay();
+		}
+
+		function saveFocusState() {
+			const state = { isFocusing, timeLeft: focusTime, target: focusTarget };
+			sessionStorage.setItem(FOCUS_KEY, JSON.stringify(state));
+		}
 
 		function updateFocusDisplay() {
 			const display = document.getElementById('focusDisplay');
 			if (!display) return;
-			const m = Math.floor(focusTime / 60);
-			const s = focusTime % 60;
+			const m = Math.max(0, Math.floor(focusTime / 60));
+			const s = Math.max(0, focusTime % 60);
 			display.textContent = `${m}:${s < 10 ? '0' : ''}${s}`;
 			const btn = document.getElementById('focusToggleBtn');
 			if (btn) {
 				btn.textContent = isFocusing ? 'Pause' : 'Start Focus';
 				btn.className = isFocusing ? 'btn btn-outline' : 'btn primary';
 			}
-			// Update title for visibility
 			if(isFocusing) document.title = `${m}:${s < 10 ? '0' : ''}${s} - Focus`;
 			else document.title = 'PolyTask';
+		}
+
+		function startFocusInterval() {
+			if (focusInterval) clearInterval(focusInterval);
+			focusInterval = setInterval(() => {
+				if (focusTarget) {
+					const now = Date.now();
+					// Sync time
+					const diff = Math.ceil((focusTarget - now) / 1000);
+					focusTime = diff;
+				} else {
+					focusTime--;
+				}
+				
+				if (focusTime <= 0) {
+					clearInterval(focusInterval);
+					isFocusing = false;
+					focusTime = 25 * 60;
+					focusTarget = null;
+					saveFocusState();
+					updateFocusDisplay();
+					
+					if (Notification.permission === 'granted') new Notification('Focus Session Complete!');
+					else alert('Focus Session Complete!');
+					
+					if (window.PolyTask && window.PolyTask.fireConfetti) window.PolyTask.fireConfetti();
+				} else {
+					updateFocusDisplay();
+				}
+			}, 1000);
 		}
 
 		function toggleFocus() {
 			if (isFocusing) {
 				clearInterval(focusInterval);
 				isFocusing = false;
+				focusTarget = null;
+				saveFocusState();
 				updateFocusDisplay();
 			} else {
 				isFocusing = true;
+				if (focusTime <= 0) focusTime = 25*60;
+				focusTarget = Date.now() + (focusTime * 1000);
+				saveFocusState();
 				updateFocusDisplay();
-				focusInterval = setInterval(() => {
-					focusTime--;
-					if (focusTime <= 0) {
-						clearInterval(focusInterval);
-						isFocusing = false;
-						focusTime = 25 * 60;
-						if (Notification.permission === 'granted') new Notification('Focus Session Complete!');
-						else alert('Focus Session Complete!');
-					}
-					updateFocusDisplay();
-				}, 1000);
+				startFocusInterval();
 			}
 		}
 
@@ -2170,6 +2222,8 @@ document.addEventListener('DOMContentLoaded', () => {
 			clearInterval(focusInterval);
 			isFocusing = false;
 			focusTime = 25 * 60;
+			focusTarget = null;
+			sessionStorage.removeItem(FOCUS_KEY);
 			updateFocusDisplay();
 		}
 
@@ -2185,6 +2239,7 @@ document.addEventListener('DOMContentLoaded', () => {
 			checkDueTasks(); // Check immediately
 
 			initPasswordToggles();
+			loadFocusState();
 			initAuthHandlers();
 			initModalAndForm();
 			initNavigation();
@@ -2198,6 +2253,48 @@ document.addEventListener('DOMContentLoaded', () => {
 						const tm = document.getElementById('taskModal');
 						if (tm && tm.style.display !== 'none') { tm.style.display='none'; return; }
 						if (defineScheduleModal && defineScheduleModal.style.display !== 'none') { defineScheduleModal.style.display='none'; return; }
+						const hm = document.getElementById('helpModal');
+						if (hm && hm.style.display !== 'none') { hm.remove(); return; }
+					}
+
+					// Ignore inputs for other shortcuts
+					if ( e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable ) return;
+
+					// '?' for Shortcuts Help
+					if (e.key === '?') {
+						let hm = document.getElementById('helpModal');
+						if (hm) { hm.remove(); return; }
+						else {
+							hm = document.createElement('div');
+							hm.id = 'helpModal';
+							hm.className = 'modal';
+							hm.style.display = 'flex';
+							hm.innerHTML = `
+								<div class="modal-content" style="max-width:400px">
+									<div class="modal-header"><h3>Keyboard Shortcuts</h3><span class="close" onclick="this.closest('.modal').remove()">&times;</span></div>
+									<div class="modal-body" style="line-height:1.8">
+										<div><kbd>N</kbd> New Task</div>
+										<div><kbd>?</kbd> Show this help</div>
+										<div><kbd>Ctrl</kbd>+<kbd>Z</kbd> Undo</div>
+										<div><kbd>Esc</kbd> Close Modals</div>
+										<div><kbd>Del</kbd> Delete hovered task</div>
+									</div>
+								</div>
+							`;
+							document.body.appendChild(hm);
+						}
+					}
+
+					// 'N' for New Task
+					if (e.key.toLowerCase() === 'n') {
+						e.preventDefault();
+						// check if openCreateModal exists (it's internal to this scope or exposed?)
+						// It is internal: function openCreateModal(dateStr, timeStr) ...
+						// But handleGlobalKeys is defined inside initGlobalKeys which is inside init which is inside the IIFE.
+						// openCreateModal is defined at line 1800+ inside IIFE scope.
+						// So we can call it if it is in scope.
+						// Let's check scope.
+						if (typeof openCreateModal === 'function') openCreateModal(formatDateISO(currentDay));
 					}
 					
 					// Ctrl+Z to Undo
@@ -2249,13 +2346,20 @@ document.addEventListener('DOMContentLoaded', () => {
 				document.body.classList.toggle('dark');
 				const isDark = document.body.classList.contains('dark');
 				localStorage.setItem('theme', isDark ? 'dark' : 'light');
+				
+				// Sync all toggles
+				document.querySelectorAll('.dm-toggle, #dmToggle, #darkModeToggle').forEach(el => {
+					if(el.type === 'checkbox') el.checked = isDark;
+				});
 			};
-			// Make sure dashboard toggle is in sync if it exists
-			const dmToggle = document.getElementById('dmToggle');
-			if(dmToggle) {
-				dmToggle.checked = (storedTheme === 'dark');
-				dmToggle.addEventListener('change', window.toggleDarkMode);
-			}
+			
+			// Initial Sync
+			document.querySelectorAll('.dm-toggle, #dmToggle, #darkModeToggle').forEach(el => {
+				if(el.type === 'checkbox') {
+					el.checked = (storedTheme === 'dark');
+					el.addEventListener('change', window.toggleDarkMode);
+				}
+			});
 
 			const userId = await getCurrentUserId();
 			if (!userId) {
@@ -2273,7 +2377,7 @@ document.addEventListener('DOMContentLoaded', () => {
 			}
 
 		// expose a couple helpers for tests
-		return { init, checkDueTasks, createUserTask, listUserTasks, getCurrentUserId, deleteUserTask, updateUserTask, autoSchedule, loadAndRender, parseSmartInput, toggleFocus, resetFocus, logout: async () => {
+		return { init, checkDueTasks, createUserTask, listUserTasks, getCurrentUserId, deleteUserTask, updateUserTask, autoSchedule, loadAndRender, parseSmartInput, toggleFocus, resetFocus, fireConfetti, logout: async () => {
 			const client = await ensureAppwriteClient();
 			const account = new AppwriteModule.Account(client);
 			await account.deleteSession('current');

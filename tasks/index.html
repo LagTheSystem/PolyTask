@@ -9,76 +9,88 @@
   <script src="https://cdn.jsdelivr.net/npm/appwrite@21.4.0"></script>
   <script type="module" src="../script.js"></script>
   <style>
-      .task-list { max-width: 600px; margin: 0 auto; display: flex; flex-direction: column; gap: 0.5rem; }
+      .filters-row {
+          display: flex; gap: 0.5rem; margin-bottom: 1.5rem; 
+      }
+      .task-list { width: 100%; display: flex; flex-direction: column; gap: 0.5rem; }
       .task-item {
-          background: white;
+          background: var(--card-bg);
           padding: 1rem;
-          border-radius: 8px;
-          border: 1px solid rgba(0,0,0,0.05);
+          border-radius: 12px;
+          border: 1px solid var(--border-color);
           display: flex;
           align-items: center;
           gap: 1rem;
           transition: all 0.2s;
+          color: inherit;
       }
-      .task-item:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+      .task-item:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.05); transform: translateY(-1px); border-color: var(--primary); }
       .task-item.completed { opacity: 0.6; }
       .task-item.completed span { text-decoration: line-through; }
       
       .checkbox-round {
-          width: 20px; height: 20px;
+          width: 22px; height: 22px;
           border: 2px solid var(--muted);
           border-radius: 50%;
           cursor: pointer;
           display: flex; align-items: center; justify-content: center;
           flex-shrink: 0;
+          transition: all 0.2s;
       }
       .checkbox-round.checked { background: var(--success); border-color: var(--success); color: white; }
       
       .task-meta { margin-left: auto; font-size: 0.8rem; color: var(--muted); display: flex; gap: 0.5rem; align-items: center; }
-      .badge { padding: 2px 8px; border-radius: 12px; font-size: 0.7rem; font-weight: 600; text-transform: uppercase; }
+      .badge { padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
       .badge.high { background: #ffebeb; color: var(--coral); }
       .badge.medium { background: #fff8e1; color: var(--warning); }
       .badge.low { background: #f0fdf4; color: var(--success); }
 
       /* Smart Input Header */
       .smart-add-box {
-          background: white;
+          background: var(--card-bg);
           padding: 1rem;
-          border-radius: 8px;
+          border-radius: 12px;
           box-shadow: 0 4px 12px rgba(0,0,0,0.05);
           margin-bottom: 2rem;
           display: flex; gap: 1rem;
+          border: 1px solid rgba(16,24,40,0.05);
+          transition: box-shadow 0.2s;
       }
+      .smart-add-box:focus-within { box-shadow: 0 8px 20px rgba(16,24,40,0.08); border-color: color-mix(in srgb, var(--primary) 20%, transparent); }
       .smart-add-box input {
           flex: 1;
-          border: 1px solid transparent;
+          border: none; /* Removed bottom border for cleaner look */
           font-size: 1.1rem;
           outline: none;
+          background: transparent;
+          color: inherit;
       }
-      .smart-add-box input:focus { border-bottom: 2px solid var(--primary); }
+      /* .smart-add-box input:focus {  } handled by container focus-within */
   </style>
 </head>
 <body>
-  <main class="container" style="max-width:800px; margin-top:2rem;">
+  <main class="card calendar-large">
       <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:2rem;">
-          <div style="display:flex; align-items:center; gap:1rem;">
-            <a href="../dashboard/" class="btn-outline" style="min-width:auto; padding:0.5rem;">&larr;</a>
             <h1 style="margin:0;">My Tasks</h1>
-          </div>
-          <div style="display:flex; gap:0.5rem; align-items:center;">
-              <label style="cursor:pointer; display:flex; align-items:center; margin-right:1rem;" title="Toggle Dark Mode">
-                 <input type="checkbox" id="dmToggle" style="display:none">
-                 <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
-              </label>
-              <button class="btn-outline" onclick="filterTasks('all')" id="filterAll">All</button>
-              <button class="btn-outline" onclick="filterTasks('active')" id="filterActive">Active</button>
-              <button class="btn-outline" onclick="filterTasks('completed')" id="filterCompleted">Done</button>
-          </div>
+            <div style="display:flex; align-items:center; gap:1rem;">
+                <label style="cursor:pointer; display:flex; align-items:center;" title="Toggle Dark Mode">
+                    <input type="checkbox" id="dmToggle" class="dm-toggle" style="display:none">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" class="dm-icon" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+                </label>
+                <a href="../dashboard/" class="btn-outline" style="text-decoration:none;">Dashboard</a>
+                <a href="../calendar/" class="btn-outline" style="text-decoration:none;">Planner</a>
+            </div>
       </div>
 
       <div class="smart-add-box">
-          <span style="font-size:1.5rem; color:var(--primary);">+</span>
+          <span style="font-size:1.5rem; color:var(--primary); display:flex; align-items:center;">+</span>
           <input type="text" id="quickAddInput" placeholder="Add a new task (e.g. 'Buy milk tomorrow')" onkeydown="handleQuickAdd(event)">
+      </div>
+
+      <div class="filters-row">
+          <button class="btn-outline" onclick="filterTasks('all')" id="filterAll">All</button>
+          <button class="btn-outline" onclick="filterTasks('active')" id="filterActive">Active</button>
+          <button class="btn-outline" onclick="filterTasks('completed')" id="filterCompleted">Done</button>
       </div>
 
       <div id="taskList" class="task-list">
@@ -88,6 +100,7 @@
 
   <script>
       let currentFilter = 'all';
+      let allFetchedTasks = []; // Client-side cache
 
       function filterTasks(type) {
           currentFilter = type;
@@ -101,17 +114,29 @@
               activeBtn.style.background = 'var(--primary)';
               activeBtn.style.color = 'white';
           }
+          // Instant render from cache
+          renderList(); 
+      }
+
+      async function refreshTasks() {
+          const list = document.getElementById('taskList');
+          // Only show loading indicator if we don't have data, or maybe subtle one
+          if(allFetchedTasks.length === 0) {
+            list.innerHTML = '<p style="text-align:center; color:var(--muted);">Loading tasks...</p>';
+          }
+          try {
+             allFetchedTasks = await PolyTask.listUserTasks();
+          } catch(e) { console.error('Failed to load tasks', e); }
           renderList();
       }
 
-      async function renderList() {
+      function renderList() {
           const list = document.getElementById('taskList');
-          const allTasks = await PolyTask.listUserTasks();
           
-          // Apply Filter
-          let tasks = allTasks;
-          if (currentFilter === 'active') tasks = allTasks.filter(t => !t.complete);
-          if (currentFilter === 'completed') tasks = allTasks.filter(t => t.complete);
+          // Apply Filter on local cache
+          let tasks = allFetchedTasks;
+          if (currentFilter === 'active') tasks = allFetchedTasks.filter(t => !t.complete);
+          if (currentFilter === 'completed') tasks = allFetchedTasks.filter(t => t.complete);
           
           if(!tasks.length) {
               list.innerHTML = `<div style="text-align:center; padding:2rem; color:var(--muted);">No ${currentFilter} tasks found.</div>`;
@@ -119,10 +144,11 @@
           }
 
           // Sort: Incomplete first, then by priority
-          tasks.sort((a,b) => (a.complete === b.complete) ? 0 : a.complete ? 1 : -1);
+          // Create a shallow copy to avoid mutating the cached array sort order permanently if undesired (though usually fine)
+          const sorted = [...tasks].sort((a,b) => (a.complete === b.complete) ? 0 : a.complete ? 1 : -1);
 
           list.innerHTML = '';
-          tasks.forEach(t => {
+          sorted.forEach(t => {
               const el = document.createElement('div');
               el.className = `task-item ${t.complete ? 'completed' : ''}`;
               
@@ -158,23 +184,48 @@
 
       async function toggleTask(id, newState) {
           try {
-              await PolyTask.updateUserTask(id, { complete: newState });
-              renderList(); // re-render
-          } catch(e) { console.error(e); }
+             if (newState && PolyTask.fireConfetti) PolyTask.fireConfetti();
+             
+             // Optimistic Update
+             const task = allFetchedTasks.find(t => t.$id === id);
+             if(task) {
+                 task.complete = newState;
+                 renderList(); // Instant UI update
+             }
+             
+             await PolyTask.updateUserTask(id, { complete: newState });
+             // No need to refreshTasks() if optimistic update was correct, 
+             // but we can background refresh to be safe or just trust the local state.
+             // For safety, we can sync quietly:
+             PolyTask.listUserTasks().then(fresh => { allFetchedTasks = fresh; }); 
+          } catch(e) { 
+              console.error(e); 
+              // Revert on error
+              refreshTasks();
+          }
       }
       
       async function deleteTask(id) {
           if(!confirm('Delete task?')) return;
           try {
-             await PolyTask.deleteUserTask(id);
+             // Optimistic Update
+             allFetchedTasks = allFetchedTasks.filter(t => t.$id !== id);
              renderList();
-          } catch(e) { console.error(e); }
+
+             await PolyTask.deleteUserTask(id);
+             // Background sync
+             PolyTask.listUserTasks().then(fresh => { allFetchedTasks = fresh; });
+          } catch(e) { 
+              console.error(e); 
+              refreshTasks();
+          }
       }
 
       async function handleQuickAdd(e) {
           if(e.key !== 'Enter') return;
           const val = e.target.value.trim();
           if(!val) return;
+          e.target.value = ''; // Clear immediately
           
           try {
              let payload = {
@@ -193,12 +244,20 @@
                      if(parsed.duration) payload.estimated_time = parsed.duration;
                  }
              }
-
-             await PolyTask.createUserTask(payload);
-             e.target.value = '';
-             showToast('Task added!', 'success'); // Assuming showToast is global or we catch it
-             renderList();
-          } catch(e) { console.error(e); }
+             
+             // Show toast immediately? Or wait for creation?
+             // Creation might take a sec.
+             
+             const newTask = await PolyTask.createUserTask(payload);
+             // Add to local cache
+             if(newTask) {
+                 allFetchedTasks.push(newTask);
+                 renderList();
+                 showToast('Task added!', 'success');
+             } else {
+                 refreshTasks();
+             }
+          } catch(e) { console.error(e); showToast('Failed to add task', 'error'); }
       }
 
       function showToast(msg) {
@@ -213,8 +272,11 @@
       document.addEventListener('DOMContentLoaded', async () => {
           await window.PolyTask.init();
           
+          // Load Tasks once
+          await refreshTasks();
+
           // Set initial filter state UI
-          filterTasks('all');
+          filterTasks('all'); 
       });
   </script>
 </body>

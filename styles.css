@@ -25,6 +25,7 @@
     --muted: var(--cadet);
     --bg: #f7f8fb; /* slightly lighter page bg */
     --card-bg: #ffffff;
+    --border-color: rgba(16,24,40,0.05);
 }
 
 /* Dark Mode Overrides */
@@ -33,6 +34,7 @@ body.dark {
     --card-bg: #1e293b;
     --primary: #94a3b8;
     --muted: #94a3b8;
+    --border-color: #334155;
     color: #e2e8f0;
 }
 
@@ -777,3 +779,26 @@ button:focus-visible, .btn:focus-visible, .icon-btn:focus-visible, input:focus-v
 .edit-event-modal { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.35); z-index: 110; }
 .edit-event-card { width: 750px; max-width: calc(100% - 2rem); }
 .schedule-actions-wrapper { position: sticky; bottom: 0; display: flex; align-items: center; justify-content: space-between; margin-top: 12px; gap: 8px; }
+
+/* Confetti */
+.confetti { position: fixed; width: 8px; height: 8px; z-index: 9999; pointer-events: none; opacity: 0.8; }
+@keyframes fall { to { transform: translateY(100vh) rotate(720deg); opacity: 0; } }
+
+/* Keyboard Keys */
+kbd { background: #eee; border-radius: 3px; border: 1px solid #b4b4b4; box-shadow: 0 1px 1px rgba(0,0,0,.2); color: #333; display: inline-block; font-size: .85em; font-weight: 700; line-height: 1; padding: 2px 4px; white-space: nowrap; }
+body.dark kbd { background: #333; border-color: #555; color: #eee; }
+/ * 
+ 
+ C o n f e t t i 
+ 
+ * / 
+ 
+ . c o n f e t t i 
+ 
+   p o s i t i o n :   f i x e d ;   w i d t h :   8 p x ;   h e i g h t :   8 p x ;   z - i n d e x :   9 9 9 9 ;   p o i n t e r - e v e n t s :   n o n e ;   o p a c i t y :   0 . 8 ;   
+ 
+ f a l l 
+ 
+   t o   {   t r a n s f o r m :   t r a n s l a t e Y ( 1 0 0 v h )   r o t a t e ( 7 2 0 d e g ) ;   o p a c i t y :   0 ;   }   
+ 
+ 
