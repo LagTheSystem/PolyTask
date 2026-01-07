@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>PolyTask — Dashboard</title>
+  <link rel="stylesheet" href="../styles.css">
+  <script>window.APPWRITE_ENDPOINT = 'https://nyc.cloud.appwrite.io/v1';</script>
+  <script src="https://cdn.jsdelivr.net/npm/appwrite@21.4.0"></script>
+  <script type="module" src="../script.js"></script>
+  <style>
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+      margin-top: 1.5rem;
+    }
+    .stat-card {
+      background: white;
+      padding: 1.5rem;
+      border-radius: var(--radius);
+      box-shadow: 0 4px 6px rgba(16,24,40,0.02);
+      border: 1px solid rgba(16,24,40,0.05);
+      position: relative;
+      overflow: hidden;
+    }
+    .stat-card h3 { margin: 0 0 0.5rem 0; font-size: 0.9rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+    .stat-card .value { font-size: 2.5rem; font-weight: 700; color: var(--primary); display: flex; align-items: baseline; gap: 0.5rem; }
+    .stat-card .value small { font-size: 1rem; color: var(--muted); font-weight: 400; }
+    .stat-card .icon { position: absolute; right: 1.5rem; top: 1.5rem; font-size: 1.5rem; opacity: 0.1; color: var(--primary); }
+    
+    .insight-box {
+      background: linear-gradient(135deg, var(--primary), var(--dark-slate));
+      color: white;
+      padding: 2rem;
+      border-radius: var(--radius);
+      margin-bottom: 2rem;
+      position: relative;
+    }
+    .insight-box h2 { margin: 0 0 0.5rem 0; }
+    .insight-box p { margin: 0; opacity: 0.9; max-width: 600px; line-height: 1.6; }
+
+    .quick-actions {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1.5rem;
+    }
+    .action-card {
+      flex: 1;
+      padding: 1rem;
+      background: white;
+      border-radius: 12px;
+      border: 1px solid rgba(0,0,0,0.05);
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+    .action-card:hover { transform: translateY(-3px); box-shadow: 0 10px 15px rgba(0,0,0,0.05); }
+    .action-card svg { width: 24px; height: 24px; color: var(--accent); }
+    
+    .nav-tabs { display: flex; gap: 1rem; margin-bottom: 2rem; border-bottom: 1px solid rgba(0,0,0,0.05); padding-bottom: 0.5rem; }
+    .nav-tab { padding: 0.5rem 1rem; cursor: pointer; color: var(--muted); font-weight: 500; text-decoration: none; border-radius: 8px; }
+    .nav-tab.active { background: white; color: var(--primary); box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+
+  </style>
+</head>
+<body>
+  <main class="container">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin: 2rem 0;">
+      <h1 style="margin:0;">Dashboard</h1>
+      <div style="display:flex;gap:1rem; align-items:center;">
+         <!-- Dark Mode Toggle -->
+         <label style="cursor:pointer; display:flex; align-items:center;" title="Toggle Dark Mode">
+             <input type="checkbox" id="dmToggle" style="display:none">
+             <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+         </label>
+         <a href="../calendar/" class="btn-outline">Calendar</a>
+         <a href="../tasks/" class="btn-outline">Tasks</a>
+         <button class="icon-btn" onclick="PolyTask.logout()">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+         </button>
+      </div>
+    </div>
+
+    <!-- Intelligent Greeting -->
+    <div class="insight-box">
+      <h2 id="greeting">Hello!</h2>
+      <p id="smartInsight">Analyzing your productivity patterns...</p>
+    </div>
+
+    <div class="dashboard-grid">
+      <div class="stat-card">
+        <h3>Pending Tasks</h3>
+        <div class="value" id="countPending">0<small>tasks</small></div>
+      </div>
+      <div class="stat-card">
+        <h3>Due Today</h3>
+        <div class="value" id="countToday" style="color:var(--coral)">0<small>urgent</small></div>
+      </div>
+      <div class="stat-card">
+        <h3>Completion Rate</h3>
+        <div class="value" id="completionRate">0%</div>
+      </div>
+      <!-- Focus Timer Widget -->
+      <div class="stat-card" style="border:1px solid var(--primary); display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center;">
+        <h3>Focus Session</h3>
+        <div class="value" id="focusDisplay" style="font-family:monospace; font-size:3rem; margin:0.5rem 0;">25:00</div>
+        <div style="display:flex; gap:0.5rem; width:100%;">
+            <button class="btn primary" id="focusToggleBtn" onclick="PolyTask.toggleFocus()" style="flex:1;">Start Focus</button>
+            <button class="btn-outline" onclick="PolyTask.resetFocus()">Reset</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <h3 style="margin-top:2rem;">Common Actions</h3>
+    <div class="quick-actions">
+        <a href="../calendar/" class="action-card">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            <span>Planner</span>
+        </a>
+        <a href="../tasks/" class="action-card">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+            <span>All Tasks</span>
+        </a>
+        <div class="action-card" onclick="document.getElementById('settingsModal').style.display='flex'">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            <span>Settings</span>
+        </div>
+    </div>
+  </main>
+
+  <!-- Settings Modal -->
+  <div id="settingsModal" style="display:none;position:fixed;inset:0;align-items:center;justify-content:center;background:rgba(0,0,0,0.35);z-index:2000;">
+      <div class="card" style="width:400px; max-width:90%;">
+          <h2>Settings</h2>
+          <div style="margin:1rem 0;">
+              <h3>Appearance</h3>
+              <label style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.5rem;">
+                  <input type="checkbox" id="darkModeToggle"> Dark Mode
+              </label>
+              <h3>Account</h3>
+              <button class="btn btn-outline" onclick="PolyTask.logout()">Sign Out</button>
+          </div>
+          <div style="display:flex;justify-content:flex-end;">
+              <button class="btn" onclick="document.getElementById('settingsModal').style.display='none'">Close</button>
+          </div>
+      </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+        try {
+            // Wait for PolyTask init (it runs automatically)
+            // But we need to use the exposed methods
+            // We can poll or just run an async wrapper
+            await window.PolyTask.init(); 
+            const user = await PolyTask.getCurrentUserId();
+            if(!user) {
+                window.location.href = '../login/index.html'; // Assuming login is here or root
+                return;
+            }
+            
+            // Populate Greeting
+            const h = new Date().getHours();
+            const greet = h < 12 ? 'Good Morning' : h < 18 ? 'Good Afternoon' : 'Good Evening';
+            document.getElementById('greeting').textContent = `${greet}!`;
+
+            // Calculate Stats
+            const tasks = await PolyTask.listUserTasks();
+            const pending = tasks.filter(t => !t.complete);
+            const todayStr = new Date().toISOString().slice(0,10);
+            const dueToday = pending.filter(t => t.due && t.due.startsWith(todayStr));
+            const completed = tasks.filter(t => t.complete);
+            
+            document.getElementById('countPending').innerHTML = `${pending.length}<small>tasks</small>`;
+            document.getElementById('countToday').innerHTML = `${dueToday.length}<small>urgent</small>`;
+            
+            const rate = tasks.length ? Math.round((completed.length / tasks.length) * 100) : 0;
+            document.getElementById('completionRate').textContent = `${rate}%`;
+
+            // Smart Insight
+            const suggestions = [];
+            if (dueToday.length > 3) suggestions.push(`You have a busy day! Focus on "${dueToday[0].name}" first.`);
+            else if (rate > 80) suggestions.push("You're on a roll! Great completion rate.");
+            else if (pending.length === 0) suggestions.push("All caught up! Time to relax or plan ahead.");
+            else suggestions.push("Pick one task and crush it.");
+            
+            document.getElementById('smartInsight').textContent = suggestions[0];
+
+            // Dark Mode is handled by script.js init() now.
+            // We just ensure the checkbox matches the current state.
+            const toggle = document.getElementById('darkModeToggle');
+            if(toggle && document.body.classList.contains('dark')) {
+                toggle.checked = true;
+            }
+            // Listener is already attached by script.js if element exists
+            // But let's double check just in case this script runs after script.js init
+            toggle.addEventListener('change', () => {
+                if(window.toggleDarkMode) window.toggleDarkMode();
+            });
+
+        } catch(e) { console.error(e); }
+    });
+  </script>
+</body>
+</html>

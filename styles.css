@@ -10,7 +10,7 @@
     --dark-cyan: #50908D; /* Info */
     --violet: #715D73;   /* Violet accent */
     --rose: #9B6371;     /* Rose taupe */
-    --cadet: #93A8AC;    /* Muted / gray */
+    --cadet: #6C7A89;    /* Muted (darkened for a11y) */
 
     /* Semantic variables used in the site */
     --radius-medium: 0.75rem;
@@ -25,6 +25,34 @@
     --muted: var(--cadet);
     --bg: #f7f8fb; /* slightly lighter page bg */
     --card-bg: #ffffff;
+}
+
+/* Dark Mode Overrides */
+body.dark {
+    --bg: #0f172a;
+    --card-bg: #1e293b;
+    --primary: #94a3b8;
+    --muted: #94a3b8;
+    color: #e2e8f0;
+}
+
+body.dark .task-item, 
+body.dark .card, 
+body.dark .stat-card,
+body.dark .action-card,
+body.dark .smart-add-box,
+body.dark .nav-tab.active {
+    background: var(--card-bg);
+    border-color: #334155;
+    color: #f1f5f9;
+}
+body.dark .smart-add-box input, body.dark input { color: white; }
+
+body.dark .input-wrapper input,
+body.dark .input-wrapper select {
+    background: #0f172a; 
+    border-color: #334155;
+    color: white;
 }
 
 body {
@@ -718,9 +746,34 @@ section {
     box-shadow: 8px 0 0 rgba(255,255,255,0.9), -8px 0 0 rgba(255,255,255,0.9);
 }
 
+/* --- Accessibility & Focus --- */
+button:focus-visible, .btn:focus-visible, .icon-btn:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+}
+
+/* --- Conflict Visuals --- */
+.event-card.conflict {
+    border: 2px solid var(--coral) !important;
+}
+.event-card.conflict::before {
+    content: "!";
+    position: absolute;
+    top: -6px; right: -6px;
+    width: 18px; height: 18px;
+    background: var(--coral);
+    color: white;
+    border-radius: 50%;
+    font-size: 11px;
+    font-weight: bold;
+    display: flex; align-items: center; justify-content: center;
+    z-index: 10;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+}
+
 
 /* --- Inline Styles Migrated --- */
 .schedule-modal { width: 720px; max-width: calc(100% - 2rem); }
-.edit-event-modal { inset: 0; align-items: center; justify-content: center; background: rgba(0,0,0,0.35); z-index: 110; }
+.edit-event-modal { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.35); z-index: 110; }
 .edit-event-card { width: 750px; max-width: calc(100% - 2rem); }
 .schedule-actions-wrapper { position: sticky; bottom: 0; display: flex; align-items: center; justify-content: space-between; margin-top: 12px; gap: 8px; }

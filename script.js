@@ -873,31 +873,44 @@ document.addEventListener('DOMContentLoaded', () => {
 					return d >= startOfCurrentDay && d <= endOfCurrentDay;
 				});
 
-				// Floating tasks: not assigned, but due today OR in the future, and not completed
-				// "Don't put stuff on the last day" -> Try to schedule future tasks today if possible
-				const floatingTasks = allTasks.filter(t => {
+				// Floating candidates: unassigned, due today OR in the future, not completed
+				const candidates = allTasks.filter(t => {
 					if (t.assigned || t.complete) return false;
 					if (!t.due) return false;
-					const due = new Date(t.due);
-					// Include tasks due today or later
-					// (We compare date strings to ignore time components for the "due date" check)
-					return due.toISOString().slice(0,10) >= currentDayStr;
+					const dueStr = new Date(t.due).toISOString().slice(0,10);
+					return dueStr >= currentDayStr;
 				});
 
-				if (floatingTasks.length === 0) {
-					// Silent return if running automatically
+				if (candidates.length === 0) {
 					console.log('No unassigned tasks to schedule.');
 					return;
 				}
 
-				// Sort floating tasks:
-				// 1. Due date ascending (earliest deadline first)
-				// 2. Estimated time descending (fit big rocks first)
-				floatingTasks.sort((a, b) => {
+				// --- Improved Sorting Logic ---
+				// Weights: High=3, Medium=2, Low=1
+				const priorityWeight = p => (p === 'high' ? 3 : p === 'low' ? 1 : 2);
+
+				candidates.sort((a, b) => {
+					// 1. Due Today always first!
+					const dateA = new Date(a.due).toISOString().slice(0,10);
+					const dateB = new Date(b.due).toISOString().slice(0,10);
+					const isTodayA = (dateA === currentDayStr);
+					const isTodayB = (dateB === currentDayStr);
+					
+					if (isTodayA && !isTodayB) return -1;
+					if (!isTodayA && isTodayB) return 1;
+
+					// 2. Priority Descending (High first)
+					const pA = priorityWeight(a.priority);
+					const pB = priorityWeight(b.priority);
+					if (pA !== pB) return pB - pA;
+
+					// 3. Due Date Ascending (Earliest first)
 					const dueA = new Date(a.due).getTime();
 					const dueB = new Date(b.due).getTime();
 					if (dueA !== dueB) return dueA - dueB;
 					
+					// 4. Duration Descending (Big blocks first)
 					const estA = typeof a.estimated_time === 'number' ? a.estimated_time : (typeof a.estimateMinutes === 'number' ? a.estimateMinutes : 60);
 					const estB = typeof b.estimated_time === 'number' ? b.estimated_time : (typeof b.estimateMinutes === 'number' ? b.estimateMinutes : 60);
 					return estB - estA;
@@ -917,43 +930,36 @@ document.addEventListener('DOMContentLoaded', () => {
 					}
 				});
 
-				// 4. Try to fit floating tasks
+				const BUFFER_MINUTES = 15; // Breathing room between tasks
+
 				let scheduledCount = 0;
-				for (const task of floatingTasks) {
+				for (const task of candidates) {
 					const duration = typeof task.estimated_time === 'number' ? task.estimated_time : (typeof task.estimateMinutes === 'number' ? task.estimateMinutes : 60);
-					// Find a gap of 'duration' minutes
 					let bestStart = -1;
 					
-					// Simple greedy search: find first gap that fits
-					let currentGapStart = -1;
-					let currentGapLen = 0;
-					
-					for (let i = 6 * 60; i < 24 * 60; i++) {
-						if (occupied[i] === 0) {
-							if (currentGapStart === -1) currentGapStart = i;
-							currentGapLen++;
-							if (currentGapLen >= duration) {
-								bestStart = currentGapStart;
-								break;
-							}
-						} else {
-							currentGapStart = -1;
-							currentGapLen = 0;
+					// Search for gap: Needs (Duration) free
+					for (let i = 6 * 60; i < 24 * 60 - duration; i++) {
+						let fits = true;
+						for (let k = 0; k < duration; k++) {
+							if (occupied[i + k] === 1) { fits = false; break; }
+						}
+						if (fits) {
+							bestStart = i;
+							break;
 						}
 					}
 
 					if (bestStart !== -1) {
-						// Found a slot!
-						// Mark as occupied
-						for (let i = bestStart; i < bestStart + duration; i++) occupied[i] = 1;
+						// Mark occupied: Task + Buffer
+						// We mark the buffer as occupied so nothing overlaps it.
+						const endMark = Math.min(1440, bestStart + duration + BUFFER_MINUTES);
+						for (let i = bestStart; i < endMark; i++) occupied[i] = 1;
 						
-						// Update task
-						const newAssigned = new Date(currentDay);
-						newAssigned.setHours(Math.floor(bestStart / 60), bestStart % 60, 0, 0);
+						// Update Task
+						const newDate = new Date(currentDay);
+						newDate.setHours(Math.floor(bestStart/60), bestStart%60, 0, 0);
 						
-						await updateUserTask(task.$id, {
-							assigned: newAssigned.toISOString()
-						});
+						await updateUserTask(task.$id || task.id, { assigned: newDate.toISOString() });
 						scheduledCount++;
 					}
 				}
@@ -1132,9 +1138,9 @@ document.addEventListener('DOMContentLoaded', () => {
 				calendarEl.innerHTML = '';
 				// wrapper for the day
 				wrapper = document.createElement('div'); wrapper.className = 'calendar-inner';
-				const header = document.createElement('div'); header.style.display = 'flex'; header.style.justifyContent = 'space-between'; header.style.alignItems = 'center';
-				header.innerHTML = `<strong>${friendlyDayLabel(currentDay)}</strong><small>${key}</small>`;
-				wrapper.appendChild(header);
+				// Remove internal header to avoid duplication with nav bar
+				// const header = document.createElement('div'); ... 
+				
 				// day grid: left times, right events
 				dayGrid = document.createElement('div'); dayGrid.className = 'day-grid';
 				timeCol = document.createElement('div'); timeCol.className = 'time-column';
@@ -1161,11 +1167,9 @@ document.addEventListener('DOMContentLoaded', () => {
 				wrapper.appendChild(dayGrid);
 				calendarEl.appendChild(wrapper);
 			} else {
-				// Update header with new date
-				const header = wrapper.querySelector('div[style*="display"]');
-				if (header) {
-					header.innerHTML = `<strong>${friendlyDayLabel(currentDay)}</strong><small>${key}</small>`;
-				}
+				// Update header with new date (Removed to prevent duplication)
+				// const header = wrapper.querySelector('div[style*="display"]');
+				// if (header) header.innerHTML = `...`;
 			}
 
 			const firstSlot = timeCol.querySelector('.time-slot');
@@ -1347,7 +1351,34 @@ document.addEventListener('DOMContentLoaded', () => {
 			
 			if (calendarEl.classList.contains('refreshing')) calendarEl.classList.remove('refreshing');
 
-			const items = byDate[key] || [];
+			let items = byDate[key] || [];
+
+			// --- Conflict Detection ---
+			items.sort((a,b) => {
+				const timeA = a.assigned ? new Date(a.assigned).getTime() : 0;
+				const timeB = b.assigned ? new Date(b.assigned).getTime() : 0;
+				return timeA - timeB;
+			});
+			for(let i=0; i<items.length; i++) {
+				const taskA = items[i];
+				if(!taskA.assigned) continue;
+				const dateA = new Date(taskA.assigned);
+				const startA = dateA.getHours()*60 + dateA.getMinutes();
+				const durA = (typeof taskA.estimateMinutes==='number' ? taskA.estimateMinutes : 60);
+				const endA = startA + durA;
+
+				for(let j=i+1; j<items.length; j++) {
+					const taskB = items[j];
+					if(!taskB.assigned) continue;
+					const dateB = new Date(taskB.assigned);
+					const startB = dateB.getHours()*60 + dateB.getMinutes();
+					if(startB >= endA) break; // Sorted, so no more overlaps
+					
+					// Overlap found!
+					taskA.isConflict = true;
+					taskB.isConflict = true;
+				}
+			}
 			
 			// Handle empty state class
 			if (!items.length) {
@@ -1411,7 +1442,7 @@ document.addEventListener('DOMContentLoaded', () => {
 				const height = Math.max(20, Math.round(clampedDuration * pxPerMinute));
 
 				const card = document.createElement('div');
-				card.className = 'event-card';
+				card.className = 'event-card' + (it.isConflict ? ' conflict' : '');
 				card.dataset.id = it.id; // Store ID for drag/drop lookup
 				card.style.position = 'absolute';
 				card.style.left = '0';
@@ -1660,13 +1691,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
 		function initAuthHandlers() {
 			const loginForm = document.getElementById('loginForm');
-			// If we're on the login page and already authenticated, skip to /home
+			// If we're on the login page and already authenticated, skip to /dashboard/
 			if (loginForm) {
 				(async () => {
 					try {
 						const client = await ensureAppwriteClient(); const App = AppwriteModule; const account = new App.Account(client);
 						const u = await account.get();
-						if (u && (u.$id || u.id)) { window.location.href = '/home'; return; }
+						if (u && (u.$id || u.id)) { window.location.href = '/dashboard/'; return; }
 					} catch (_) {}
 				})();
 				// Prefill from localStorage remember
@@ -1685,17 +1716,33 @@ document.addEventListener('DOMContentLoaded', () => {
 				try {
 					const client = await ensureAppwriteClient(); const App = AppwriteModule; const account = new App.Account(client);
 					let handled = false;
-					const modern = await invokeWithCompat(account, 'createEmailPasswordSession', [email, password], { email, password });
-					if (modern.called) handled = true;
-					if (!handled) {
-						const legacy = await invokeWithCompat(account, 'createEmailSession', [email, password], { email, password });
-						handled = legacy.called;
+					try {
+						const modern = await invokeWithCompat(account, 'createEmailPasswordSession', [email, password], { email, password });
+						if (modern.called) handled = true;
+						if (!handled) {
+							const legacy = await invokeWithCompat(account, 'createEmailSession', [email, password], { email, password });
+							handled = legacy.called;
+						}
+						if (!handled && typeof account.createSession === 'function' && account.createSession.length > 1) {
+							await account.createSession(email, password);
+							handled = true;
+						}
+						if (!handled) throw new Error('Appwrite session method missing');
+					} catch (sessionErr) {
+						// Only swallow "session active" errors
+						if (sessionErr.message && (sessionErr.message.includes('session is active') || sessionErr.message.includes('should be guest'))) {
+							// Verify we actually have a session
+							const u = await account.get();
+							if (u && (u.$id || u.id)) { 
+								console.log('Recovered existing session');
+								handled = true; 
+							} else {
+								throw sessionErr;
+							}
+						} else {
+							throw sessionErr;
+						}
 					}
-					if (!handled && typeof account.createSession === 'function' && account.createSession.length > 1) {
-						await account.createSession(email, password);
-						handled = true;
-					}
-					if (!handled) throw new Error('Appwrite session method missing');
 					
 					// Get user ID and ensure their collection exists
 					cachedUserId = null; // Clear cache to force fresh fetch
@@ -1720,7 +1767,7 @@ document.addEventListener('DOMContentLoaded', () => {
 							localStorage.removeItem('pt_email');
 						}
 					} catch (_) {}
-					window.location.href = '/home';
+					window.location.href = '/dashboard/';
 				} catch (err) { console.error('Login error',err); showFormError(loginForm, err.message || 'Sign in failed'); }
 			});
 
@@ -1769,7 +1816,7 @@ document.addEventListener('DOMContentLoaded', () => {
 						}
 					}
 					
-					window.location.href = '/home';
+					window.location.href = '/dashboard/';
 				} catch (err) { console.error('Signup error',err); showFormError(signupForm, err.message || 'Sign up failed'); }
 			});
 		}
@@ -2019,8 +2066,124 @@ document.addEventListener('DOMContentLoaded', () => {
 			updatePosition();
 		}
 
+		async function checkDueTasks() {
+			if (!('Notification' in window) || Notification.permission !== 'granted') return;
+
+			try {
+				const tasks = await listUserTasks();
+				const now = new Date();
+				const fifteenMinsLater = new Date(now.getTime() + 15 * 60000);
+
+				tasks.forEach(task => {
+					if (task.complete || !task.due) return;
+					
+					const dueDate = new Date(task.due);
+					// Check if due in the future (now < dueDate) AND within 15 mins (dueDate <= fifteenMinsLater)
+					if (dueDate > now && dueDate <= fifteenMinsLater) {
+						const notifiedKey = `notified_task_${task.$id}`;
+						if (!sessionStorage.getItem(notifiedKey)) {
+							new Notification(`Task Due Soon: ${task.name}`, {
+								body: `This task is due at ${dueDate.toLocaleTimeString()}`,
+							});
+							sessionStorage.setItem(notifiedKey, 'true');
+						}
+					}
+				});
+			} catch (err) {
+				console.error('Error checking due tasks:', err);
+			}
+		}
+
+		// --- local notifications -------------------------------------------
+		async function checkDueTasks() {
+			if (!('Notification' in window) || Notification.permission !== 'granted') return;
+
+			try {
+				const tasks = await listUserTasks();
+				const now = new Date();
+				const fifteenMinsLater = new Date(now.getTime() + 15 * 60000);
+
+				tasks.forEach(task => {
+					if (task.complete || !task.due) return;
+					
+					const dueDate = new Date(task.due);
+					// Check if due in the future (now < dueDate) AND within 15 mins (dueDate <= fifteenMinsLater)
+					if (dueDate > now && dueDate <= fifteenMinsLater) {
+						const notifiedKey = `notified_task_${task.$id}`;
+						if (!sessionStorage.getItem(notifiedKey)) {
+							const n = new Notification(`Due Soon: ${task.name}`, {
+								body: `Due at ${dueDate.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}`,
+							});
+							sessionStorage.setItem(notifiedKey, 'true');
+						}
+					}
+				});
+			} catch (err) {
+				console.error('Error checking due tasks:', err);
+			}
+		}
+
+		// --- Focus Timer ---
+		let focusInterval = null;
+		let focusTime = 25 * 60;
+		let isFocusing = false;
+
+		function updateFocusDisplay() {
+			const display = document.getElementById('focusDisplay');
+			if (!display) return;
+			const m = Math.floor(focusTime / 60);
+			const s = focusTime % 60;
+			display.textContent = `${m}:${s < 10 ? '0' : ''}${s}`;
+			const btn = document.getElementById('focusToggleBtn');
+			if (btn) {
+				btn.textContent = isFocusing ? 'Pause' : 'Start Focus';
+				btn.className = isFocusing ? 'btn btn-outline' : 'btn primary';
+			}
+			// Update title for visibility
+			if(isFocusing) document.title = `${m}:${s < 10 ? '0' : ''}${s} - Focus`;
+			else document.title = 'PolyTask';
+		}
+
+		function toggleFocus() {
+			if (isFocusing) {
+				clearInterval(focusInterval);
+				isFocusing = false;
+				updateFocusDisplay();
+			} else {
+				isFocusing = true;
+				updateFocusDisplay();
+				focusInterval = setInterval(() => {
+					focusTime--;
+					if (focusTime <= 0) {
+						clearInterval(focusInterval);
+						isFocusing = false;
+						focusTime = 25 * 60;
+						if (Notification.permission === 'granted') new Notification('Focus Session Complete!');
+						else alert('Focus Session Complete!');
+					}
+					updateFocusDisplay();
+				}, 1000);
+			}
+		}
+
+		function resetFocus() {
+			clearInterval(focusInterval);
+			isFocusing = false;
+			focusTime = 25 * 60;
+			updateFocusDisplay();
+		}
+
 		// --- public init ----------------------------------------------------
 		async function init() {
+			// 1. Request Notification permission
+			if ('Notification' in window && Notification.permission === 'default') {
+				Notification.requestPermission();
+			}
+
+			// 2. Start checking due tasks
+			setInterval(checkDueTasks, 60000); // Check every minute
+			checkDueTasks(); // Check immediately
+
 			initPasswordToggles();
 			initAuthHandlers();
 			initModalAndForm();
@@ -2077,18 +2240,45 @@ document.addEventListener('DOMContentLoaded', () => {
 			}
 			initGlobalKeys();
 
+			// --- Dark Mode Logic ---
+			const storedTheme = localStorage.getItem('theme');
+			if (storedTheme === 'dark') {
+				document.body.classList.add('dark');
+			}
+			window.toggleDarkMode = function() {
+				document.body.classList.toggle('dark');
+				const isDark = document.body.classList.contains('dark');
+				localStorage.setItem('theme', isDark ? 'dark' : 'light');
+			};
+			// Make sure dashboard toggle is in sync if it exists
+			const dmToggle = document.getElementById('dmToggle');
+			if(dmToggle) {
+				dmToggle.checked = (storedTheme === 'dark');
+				dmToggle.addEventListener('change', window.toggleDarkMode);
+			}
+
 			const userId = await getCurrentUserId();
 			if (!userId) {
 					// Not logged in: send to login page
-					console.info('User not authenticated — redirecting to /login');
-					window.location.href = '/login';
+					if (!window.location.pathname.includes('/login') && !window.location.pathname.endsWith('index.html') && window.location.pathname !== '/') {
+						console.info('User not authenticated — redirecting to /login');
+						window.location.href = '/login'; // Or root
+					}
 					return;
-				}
-				await loadAndRender();
+			}
+			
+			// If we are on dashboard or calendar, render is handled by page specific script usually
+			// checking for #calendar element is done in loadAndRender
+			await loadAndRender();
 			}
 
 		// expose a couple helpers for tests
-		return { init, createUserTask, listUserTasks, getCurrentUserId, deleteUserTask, updateUserTask, autoSchedule, loadAndRender };
+		return { init, checkDueTasks, createUserTask, listUserTasks, getCurrentUserId, deleteUserTask, updateUserTask, autoSchedule, loadAndRender, parseSmartInput, toggleFocus, resetFocus, logout: async () => {
+			const client = await ensureAppwriteClient();
+			const account = new AppwriteModule.Account(client);
+			await account.deleteSession('current');
+			window.location.href = '../index.html';
+		}};
 	})();
 
 		// expose globally for modal helpers and tests

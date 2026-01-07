@@ -10,13 +10,22 @@
   <script type="module" src="../script.js"></script>
 </head>
 <body>
-  <main class="card calendar-large">
-      <h1>My Tasks — Day view</h1>
+  <main class="card calendar-large" style="margin-top:2rem;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+        <h1 style="margin:0;">Planner</h1>
+        <div style="display:flex;align-items:center;gap:1rem;">
+             <label style="cursor:pointer; display:flex; align-items:center;" title="Toggle Dark Mode">
+                 <input type="checkbox" id="dmToggle" style="display:none">
+                 <svg viewBox="0 0 24 24" width="20" height="20" fill="none" class="dm-icon" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+             </label>
+             <a href="../dashboard/" class="btn-outline" style="text-decoration:none;">Dashboard</a>
+        </div>
+      </div>
       <div class="nav-row">
         <button id="prevDay" class="btn-outline nav-day-btn prev">Prev day</button>
         <div id="currentDateDisplay"></div>
         <button id="nextDay" class="btn-outline nav-day-btn next">Next day</button>
-        <button id="autoScheduleBtn" class="btn-outline nav-day-btn" style="background:var(--violet);color:white;" onclick="PolyTask.autoSchedule()" title="Auto-assign tasks to free slots">Auto Schedule</button>
+        <!-- Auto-schedule runs automatically on task creation now -->
       </div>
     
 

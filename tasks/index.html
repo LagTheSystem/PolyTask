@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>PolyTask — All Tasks</title>
+  <link rel="stylesheet" href="../styles.css">
+  <script>window.APPWRITE_ENDPOINT = 'https://nyc.cloud.appwrite.io/v1';</script>
+  <script src="https://cdn.jsdelivr.net/npm/appwrite@21.4.0"></script>
+  <script type="module" src="../script.js"></script>
+  <style>
+      .task-list { max-width: 600px; margin: 0 auto; display: flex; flex-direction: column; gap: 0.5rem; }
+      .task-item {
+          background: white;
+          padding: 1rem;
+          border-radius: 8px;
+          border: 1px solid rgba(0,0,0,0.05);
+          display: flex;
+          align-items: center;
+          gap: 1rem;
+          transition: all 0.2s;
+      }
+      .task-item:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+      .task-item.completed { opacity: 0.6; }
+      .task-item.completed span { text-decoration: line-through; }
+      
+      .checkbox-round {
+          width: 20px; height: 20px;
+          border: 2px solid var(--muted);
+          border-radius: 50%;
+          cursor: pointer;
+          display: flex; align-items: center; justify-content: center;
+          flex-shrink: 0;
+      }
+      .checkbox-round.checked { background: var(--success); border-color: var(--success); color: white; }
+      
+      .task-meta { margin-left: auto; font-size: 0.8rem; color: var(--muted); display: flex; gap: 0.5rem; align-items: center; }
+      .badge { padding: 2px 8px; border-radius: 12px; font-size: 0.7rem; font-weight: 600; text-transform: uppercase; }
+      .badge.high { background: #ffebeb; color: var(--coral); }
+      .badge.medium { background: #fff8e1; color: var(--warning); }
+      .badge.low { background: #f0fdf4; color: var(--success); }
+
+      /* Smart Input Header */
+      .smart-add-box {
+          background: white;
+          padding: 1rem;
+          border-radius: 8px;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+          margin-bottom: 2rem;
+          display: flex; gap: 1rem;
+      }
+      .smart-add-box input {
+          flex: 1;
+          border: 1px solid transparent;
+          font-size: 1.1rem;
+          outline: none;
+      }
+      .smart-add-box input:focus { border-bottom: 2px solid var(--primary); }
+  </style>
+</head>
+<body>
+  <main class="container" style="max-width:800px; margin-top:2rem;">
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:2rem;">
+          <div style="display:flex; align-items:center; gap:1rem;">
+            <a href="../dashboard/" class="btn-outline" style="min-width:auto; padding:0.5rem;">&larr;</a>
+            <h1 style="margin:0;">My Tasks</h1>
+          </div>
+          <div style="display:flex; gap:0.5rem; align-items:center;">
+              <label style="cursor:pointer; display:flex; align-items:center; margin-right:1rem;" title="Toggle Dark Mode">
+                 <input type="checkbox" id="dmToggle" style="display:none">
+                 <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+              </label>
+              <button class="btn-outline" onclick="filterTasks('all')" id="filterAll">All</button>
+              <button class="btn-outline" onclick="filterTasks('active')" id="filterActive">Active</button>
+              <button class="btn-outline" onclick="filterTasks('completed')" id="filterCompleted">Done</button>
+          </div>
+      </div>
+
+      <div class="smart-add-box">
+          <span style="font-size:1.5rem; color:var(--primary);">+</span>
+          <input type="text" id="quickAddInput" placeholder="Add a new task (e.g. 'Buy milk tomorrow')" onkeydown="handleQuickAdd(event)">
+      </div>
+
+      <div id="taskList" class="task-list">
+          <p style="text-align:center; color:var(--muted);">Loading tasks...</p>
+      </div>
+  </main>
+
+  <script>
+      let currentFilter = 'all';
+
+      function filterTasks(type) {
+          currentFilter = type;
+          // Update visual state of buttons
+          document.querySelectorAll('.btn-outline').forEach(b => {
+              if (b.id.startsWith('filter')) b.style.background = 'transparent';
+              if (b.id.startsWith('filter')) b.style.color = 'inherit';
+          });
+          const activeBtn = document.getElementById('filter' + type.charAt(0).toUpperCase() + type.slice(1));
+          if(activeBtn) {
+              activeBtn.style.background = 'var(--primary)';
+              activeBtn.style.color = 'white';
+          }
+          renderList();
+      }
+
+      async function renderList() {
+          const list = document.getElementById('taskList');
+          const allTasks = await PolyTask.listUserTasks();
+          
+          // Apply Filter
+          let tasks = allTasks;
+          if (currentFilter === 'active') tasks = allTasks.filter(t => !t.complete);
+          if (currentFilter === 'completed') tasks = allTasks.filter(t => t.complete);
+          
+          if(!tasks.length) {
+              list.innerHTML = `<div style="text-align:center; padding:2rem; color:var(--muted);">No ${currentFilter} tasks found.</div>`;
+              return;
+          }
+
+          // Sort: Incomplete first, then by priority
+          tasks.sort((a,b) => (a.complete === b.complete) ? 0 : a.complete ? 1 : -1);
+
+          list.innerHTML = '';
+          tasks.forEach(t => {
+              const el = document.createElement('div');
+              el.className = `task-item ${t.complete ? 'completed' : ''}`;
+              
+              const priorityClass = (t.priority || 'medium').toLowerCase();
+              const dateStr = t.due ? new Date(t.due).toLocaleDateString() : '';
+              
+              const categoryPill = t.category 
+                ? `<span class="badge" style="background-color: ${t.color || 'var(--muted)'}; color: white; opacity: 0.9; margin-left:8px;">${t.category}</span>` 
+                : '';
+
+              el.innerHTML = `
+                  <div class="checkbox-round ${t.complete ? 'checked' : ''}" onclick="toggleTask('${t.$id}', ${!t.complete})">
+                     ${t.complete ? '✓' : ''}
+                  </div>
+                  <div style="flex:1;">
+                      <div style="font-weight:500; font-size:1.05rem;">
+                         <span class="title">${t.name}</span>
+                         ${categoryPill}
+                      </div>
+                      <div style="font-size:0.85rem; color:var(--muted); margin-top:0.2rem;">
+                          ${dateStr ? '📅 ' + dateStr : ''} 
+                          ${t.estimated_time ? ' • ⏱ ' + t.estimated_time + 'm' : ''}
+                      </div>
+                  </div>
+                  <div class="task-meta">
+                      <span class="badge ${priorityClass}">${t.priority || 'medium'}</span>
+                      <button class="icon-btn" onclick="deleteTask('${t.$id}')" style="color:var(--coral); opacity:0.5;">&times;</button>
+                  </div>
+              `;
+              list.appendChild(el);
+          });
+      }
+
+      async function toggleTask(id, newState) {
+          try {
+              await PolyTask.updateUserTask(id, { complete: newState });
+              renderList(); // re-render
+          } catch(e) { console.error(e); }
+      }
+      
+      async function deleteTask(id) {
+          if(!confirm('Delete task?')) return;
+          try {
+             await PolyTask.deleteUserTask(id);
+             renderList();
+          } catch(e) { console.error(e); }
+      }
+
+      async function handleQuickAdd(e) {
+          if(e.key !== 'Enter') return;
+          const val = e.target.value.trim();
+          if(!val) return;
+          
+          try {
+             let payload = {
+                 name: val,
+                 complete: false,
+                 priority: 'medium'
+             };
+             
+             // Smart Parsing logic
+             if (window.PolyTask && window.PolyTask.parseSmartInput) {
+                 const parsed = window.PolyTask.parseSmartInput(val);
+                 if (parsed) {
+                     payload.name = parsed.cleanText || val;
+                     if (parsed.date) payload.due = parsed.date + (parsed.time ? 'T'+parsed.time+':00' : 'T12:00:00');
+                     // if estimated minutes..
+                     if(parsed.duration) payload.estimated_time = parsed.duration;
+                 }
+             }
+
+             await PolyTask.createUserTask(payload);
+             e.target.value = '';
+             showToast('Task added!', 'success'); // Assuming showToast is global or we catch it
+             renderList();
+          } catch(e) { console.error(e); }
+      }
+
+      function showToast(msg) {
+          // Simple fallback toast
+          const div = document.createElement('div');
+          div.style.cssText = "position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#333;color:white;padding:12px 24px;border-radius:8px;";
+          div.textContent = msg;
+          document.body.appendChild(div);
+          setTimeout(() => div.remove(), 2000);
+      }
+
+      document.addEventListener('DOMContentLoaded', async () => {
+          await window.PolyTask.init();
+          
+          // Set initial filter state UI
+          filterTasks('all');
+      });
+  </script>
+</body>
+</html>
