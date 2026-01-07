@@ -92,7 +92,7 @@ body {
 .hero .lead { font-size: 1.05rem; color: var(--muted); margin-bottom: 1.25rem; }
 
 .cta-row { display:flex; gap:0.75rem; justify-content:center; align-items:center; margin-top:1rem; }
-.btn-outline { background: transparent; color: var(--primary); border: 1px solid color-mix(in srgb, var(--primary) 12%, black 2%); font-weight:600 }
+.btn-outline { background: transparent; color: var(--primary); border: 1px solid color-mix(in srgb, var(--primary) 12%, black 2%); font-weight:600; padding: 0.75rem 1rem; }
 
 .features.card { margin: 1.5rem auto; padding: 1.25rem; }
 .features-grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:1rem; margin-top:1rem; }
