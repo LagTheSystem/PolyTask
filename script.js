@@ -1787,7 +1787,7 @@ document.addEventListener('DOMContentLoaded', () => {
 							localStorage.removeItem('pt_email');
 						}
 					} catch (_) {}
-					window.location.href = '/dashboard/';
+					window.location.href = '../dashboard/index.html';
 				} catch (err) { console.error('Login error',err); showFormError(loginForm, err.message || 'Sign in failed'); }
 			});
 
@@ -1836,7 +1836,7 @@ document.addEventListener('DOMContentLoaded', () => {
 						}
 					}
 					
-					window.location.href = '/dashboard/';
+					window.location.href = '../dashboard/index.html';
 				} catch (err) { console.error('Signup error',err); showFormError(signupForm, err.message || 'Sign up failed'); }
 			});
 		}
