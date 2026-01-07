@@ -231,7 +231,8 @@
              let payload = {
                  name: val,
                  complete: false,
-                 priority: 'medium'
+                 priority: 'medium',
+                 due: new Date().toISOString() // Default to now to prevent "Missing required attribute" error
              };
              
              // Smart Parsing logic
@@ -270,7 +271,12 @@
       }
 
       document.addEventListener('DOMContentLoaded', async () => {
-          await window.PolyTask.init();
+          // Wait for PolyTask to be available
+          if (!window.PolyTask) {
+             await new Promise(r => {
+                const i = setInterval(() => { if(window.PolyTask){clearInterval(i); r();} }, 50);
+             });
+          }
           
           // Load Tasks once
           await refreshTasks();

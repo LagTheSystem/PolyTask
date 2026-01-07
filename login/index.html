@@ -9,8 +9,8 @@
         <script src="https://cdn.jsdelivr.net/npm/appwrite@21.4.0"></script>
         <script type="module" src="../script.js"></script>
 </head>
-<body>
-    <main class="card" role="main" aria-labelledby="signin-heading">
+<body style="display:flex; flex-direction:column; min-height:100vh;">
+    <main class="card" role="main" aria-labelledby="signin-heading" style="margin: auto;">
         <h1 id="signin-heading">Sign in to PolyTask</h1>
         <p class="lead">Welcome back — enter your details to continue.</p>
 
@@ -24,7 +24,7 @@
             <div class="input-wrapper">
                 <input id="password" name="password" type="password" autocomplete="current-password" required minlength="8" placeholder=" " aria-describedby="passwordHelp" />
                 <label for="password">Password</label>
-                <button type="button" id="togglePassword" class="icon-btn toggle-btn" aria-pressed="false" title="Show password">Show</button>
+                <button type="button" id="togglePassword" class="icon-btn toggle-btn" aria-pressed="false" title="Show password" style="position:absolute; right:10px; top:50%; transform:translateY(-50%); z-index:5;">Show</button>
                 <div id="passwordHelp" class="helper">Minimum 8 characters.</div>
             </div>
 

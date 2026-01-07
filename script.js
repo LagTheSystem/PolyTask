@@ -539,6 +539,18 @@ document.addEventListener('DOMContentLoaded', () => {
 		}
 
 		// --- auth helpers --------------------------------------------------
+		async function getCurrentUser() {
+			try {
+				const client = await ensureAppwriteClient();
+				const App = AppwriteModule || (typeof window !== 'undefined' && window.Appwrite) || null;
+				if (!App) return null;
+				const account = new App.Account(client);
+				return await account.get();
+			} catch (err) {
+				return null;
+			}
+		}
+
 		async function getCurrentUserId() {
 			if (cachedUserId) return cachedUserId;
 			try {
@@ -1717,7 +1729,7 @@ document.addEventListener('DOMContentLoaded', () => {
 					try {
 						const client = await ensureAppwriteClient(); const App = AppwriteModule; const account = new App.Account(client);
 						const u = await account.get();
-						if (u && (u.$id || u.id)) { window.location.href = '/dashboard/'; return; }
+						if (u && (u.$id || u.id)) { window.location.href = '../dashboard/'; return; }
 					} catch (_) {}
 				})();
 				// Prefill from localStorage remember
@@ -2364,9 +2376,15 @@ document.addEventListener('DOMContentLoaded', () => {
 			const userId = await getCurrentUserId();
 			if (!userId) {
 					// Not logged in: send to login page
-					if (!window.location.pathname.includes('/login') && !window.location.pathname.endsWith('index.html') && window.location.pathname !== '/') {
-						console.info('User not authenticated — redirecting to /login');
-						window.location.href = '/login'; // Or root
+					// Check if we are at root (localhost "/" or GitHub Pages "/PolyTask/")
+					const path = window.location.pathname;
+					const isRootUrl = path === '/' || path === '/PolyTask/' || path.replace(/\/$/, '') === '/PolyTask';
+					
+					if (!path.includes('/login') && !path.endsWith('index.html') && !isRootUrl) {
+						console.info('User not authenticated — redirecting to login');
+						// Determine relative path to login based on script location
+						const isScriptAtRoot = !!document.querySelector('script[src="script.js"], script[src="./script.js"]');
+						window.location.href = isScriptAtRoot ? 'login/' : '../login/';
 					}
 					return;
 			}
@@ -2377,7 +2395,7 @@ document.addEventListener('DOMContentLoaded', () => {
 			}
 
 		// expose a couple helpers for tests
-		return { init, checkDueTasks, createUserTask, listUserTasks, getCurrentUserId, deleteUserTask, updateUserTask, autoSchedule, loadAndRender, parseSmartInput, toggleFocus, resetFocus, fireConfetti, logout: async () => {
+		return { init, checkDueTasks, createUserTask, listUserTasks, getCurrentUserId, getCurrentUser, deleteUserTask, updateUserTask, autoSchedule, loadAndRender, parseSmartInput, toggleFocus, resetFocus, fireConfetti, logout: async () => {
 			const client = await ensureAppwriteClient();
 			const account = new AppwriteModule.Account(client);
 			await account.deleteSession('current');
