@@ -224,18 +224,32 @@
              const pending = tasks.filter(t => !t.complete);
              const todayStr = new Date().toISOString().slice(0,10);
              const dueToday = pending.filter(t => t.due && t.due.startsWith(todayStr));
-             const completed = tasks.filter(t => t.complete);
+             
+             // Efficiency: Last 7 days (based on Due Date)
+             const endOb = new Date(); endOb.setHours(23,59,59,999);
+             const startOb = new Date(); startOb.setDate(endOb.getDate() - 7); startOb.setHours(0,0,0,0);
+             
+             const recentTasks = tasks.filter(t => {
+                 if (!t.due) return false;
+                 const d = new Date(t.due);
+                 return d >= startOb && d <= endOb;
+             });
+             const recentCompleted = recentTasks.filter(t => t.complete).length;
 
              document.getElementById('statPending').textContent = pending.length;
              document.getElementById('statToday').textContent = dueToday.length;
              
-             const rate = tasks.length ? Math.round((completed.length / tasks.length) * 100) : 0;
+             const rate = recentTasks.length ? Math.round((recentCompleted / recentTasks.length) * 100) : 0;
              document.getElementById('statRate').textContent = `${rate}%`;
 
              // 4. Task Summary Text
              let summary = '';
              if (dueToday.length > 0) {
-                 summary = `You have <strong>${dueToday.length}</strong> urgent tasks today. Priority: "${dueToday[0].name}".`;
+                 const pMap = { high: 3, medium: 2, low: 1 };
+                 dueToday.sort((a,b) => (pMap[b.priority]||0) - (pMap[a.priority]||0));
+                 const topTask = dueToday[0];
+                 const pLabel = topTask.priority ? topTask.priority.charAt(0).toUpperCase() + topTask.priority.slice(1) : 'Medium';
+                 summary = `You have <strong>${dueToday.length}</strong> urgent tasks today. Top priority: "${topTask.name}" <span style="font-size:0.8em;opacity:0.8;background:${topTask.priority==='high'?'var(--accent)':'var(--muted)'};color:white;padding:2px 6px;border-radius:4px;">${pLabel}</span>.`;
              } else if (pending.length > 0) {
                  summary = `No urgent tasks today, but <strong>${pending.length}</strong> pending items in your backlog.`;
              } else {

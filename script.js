@@ -407,6 +407,8 @@ document.addEventListener('DOMContentLoaded', () => {
 					collectionExists = true;
 					// Try to ensure new attributes like 'completed' exist
 					try { await invokeWithCompat(db, 'createBooleanAttribute', [APPWRITE_DATABASE, userId, 'completed', false, false], { databaseId: APPWRITE_DATABASE, collectionId: userId, key: 'completed', required: false, default: false }); } catch (e) {}
+					try { await invokeWithCompat(db, 'createBooleanAttribute', [APPWRITE_DATABASE, userId, 'complete', false, false], { databaseId: APPWRITE_DATABASE, collectionId: userId, key: 'complete', required: false, default: false }); } catch (e) {}
+					try { await invokeWithCompat(db, 'createIntegerAttribute', [APPWRITE_DATABASE, userId, 'estimated_time', false, 1], { databaseId: APPWRITE_DATABASE, collectionId: userId, key: 'estimated_time', required: false, min: 1 }); } catch (e) {}
 					try { await invokeWithCompat(db, 'createStringAttribute', [APPWRITE_DATABASE, userId, 'repeat', 20, false], { databaseId: APPWRITE_DATABASE, collectionId: userId, key: 'repeat', size: 20, required: false }); } catch (e) {}
 					try { await invokeWithCompat(db, 'createStringAttribute', [APPWRITE_DATABASE, userId, 'priority', 10, false, 'medium'], { databaseId: APPWRITE_DATABASE, collectionId: userId, key: 'priority', size: 10, required: false, default: 'medium' }); } catch (e) {}
 					return existing.value;
@@ -417,6 +419,8 @@ document.addEventListener('DOMContentLoaded', () => {
 					console.log(`Collection ${userId} already exists`);
 					collectionExists = true;
 					try { await invokeWithCompat(db, 'createBooleanAttribute', [APPWRITE_DATABASE, userId, 'completed', false, false], { databaseId: APPWRITE_DATABASE, collectionId: userId, key: 'completed', required: false, default: false }); } catch (e) {}
+					try { await invokeWithCompat(db, 'createBooleanAttribute', [APPWRITE_DATABASE, userId, 'complete', false, false], { databaseId: APPWRITE_DATABASE, collectionId: userId, key: 'complete', required: false, default: false }); } catch (e) {}
+					try { await invokeWithCompat(db, 'createIntegerAttribute', [APPWRITE_DATABASE, userId, 'estimated_time', false, 1], { databaseId: APPWRITE_DATABASE, collectionId: userId, key: 'estimated_time', required: false, min: 1 }); } catch (e) {}
 					try { await invokeWithCompat(db, 'createStringAttribute', [APPWRITE_DATABASE, userId, 'repeat', 20, false], { databaseId: APPWRITE_DATABASE, collectionId: userId, key: 'repeat', size: 20, required: false }); } catch (e) {}
 					try { await invokeWithCompat(db, 'createStringAttribute', [APPWRITE_DATABASE, userId, 'priority', 10, false, 'medium'], { databaseId: APPWRITE_DATABASE, collectionId: userId, key: 'priority', size: 10, required: false, default: 'medium' }); } catch (e) {}
 					return col;
@@ -502,6 +506,17 @@ document.addEventListener('DOMContentLoaded', () => {
 			} catch (e) {
 				// ignore if already exists or if backend rejects optional bounds signature
 			}
+			
+			// estimated_time (integer, optional, min 1) - matches createUserTask payload
+			try {
+				await invokeWithCompat(db, 'createIntegerAttribute', [APPWRITE_DATABASE, userId, 'estimated_time', false, 1], {
+					databaseId: APPWRITE_DATABASE,
+					collectionId: userId,
+					key: 'estimated_time',
+					required: false,
+					min: 1
+				});
+			} catch (e) { }
 
 			console.log(`Created attributes for collection ${userId}`);
 			// completed (boolean, optional, default false)
@@ -510,6 +525,17 @@ document.addEventListener('DOMContentLoaded', () => {
 					databaseId: APPWRITE_DATABASE,
 					collectionId: userId,
 					key: 'completed',
+					required: false,
+					default: false
+				});
+			} catch (e) { /* ignore if exists */ }
+			
+			// complete (boolean, optional, default false) - matches createUserTask payload
+			try {
+				await invokeWithCompat(db, 'createBooleanAttribute', [APPWRITE_DATABASE, userId, 'complete', false, false], {
+					databaseId: APPWRITE_DATABASE,
+					collectionId: userId,
+					key: 'complete',
 					required: false,
 					default: false
 				});
