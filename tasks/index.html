@@ -55,21 +55,22 @@
           position: relative;
       }
       /* Match standard input styles from styles.css */
-      .smart-add-box input {
+      #quickAddInput {
           width: 100%;
-          height: 48px;
-          line-height: 48px;
-          padding: 0 0.9rem 0 2.5rem; /* Left padding for the + icon */
-          border: 1px solid #e6e6e6; /* Standard border */
-          border-radius: 0.6rem;
+          height: 52px;
+          line-height: normal;
+          padding: 0 1rem 0 4.5rem !important; /* Force padding over global .card input styles */
+          border: 1px solid #e0e0e0;
+          border-radius: 0.8rem;
           background: var(--card-bg);
-          font-size: 1rem;
+          font-size: 1.05rem;
           outline: none;
-          transition: box-shadow .12s ease, border-color .12s ease;
+          transition: all 0.2s ease;
           color: inherit;
+          box-shadow: 0 2px 5px rgba(0,0,0,0.02);
       }
       /* Focus state matching global inputs */
-      .smart-add-box input:focus {
+      #quickAddInput:focus {
           border-color: color-mix(in srgb, var(--info) 85%, black 5%);
           box-shadow: 0 6px 18px color-mix(in srgb, var(--primary) 6%, transparent 94%);
       }
@@ -77,10 +78,15 @@
       /* Position the + icon inside the input */
       .smart-add-box span {
           position: absolute;
-          left: 12px;
-          font-size: 1.2rem;
+          left: 20px;
+          top: 0;
+          height: 100%;
+          display: flex;
+          align-items: center;
+          font-size: 1.5rem;
           color: var(--primary);
           pointer-events: none;
+          z-index: 5;
       }
   </style>
 </head>
@@ -99,7 +105,7 @@
       </div>
 
       <div class="smart-add-box">
-          <span style="font-size:1.5rem; color:var(--primary); display:flex; align-items:center;">+</span>
+          <span>+</span>
           <input type="text" id="quickAddInput" placeholder="Add a new task (e.g. 'Buy milk tomorrow')" onkeydown="handleQuickAdd(event)">
       </div>
 

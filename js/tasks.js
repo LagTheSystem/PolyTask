@@ -37,7 +37,11 @@ export async function listUserTasks() {
             queries: query
         });
         const res = modern.called ? modern.value : await db.listDocuments(APPWRITE_DATABASE, APPWRITE_COLLECTION_TASKS, query);
-        return (res && res.documents) || [];
+        
+        // Client-side safety filter: Ensure we only return tasks belonging to this user
+        // This acts as a second line of defense if the DB query is ignored or malformed
+        const docs = (res && res.documents) || [];
+        return docs.filter(doc => doc.userId === userId);
     } catch (err) {
         // If collection missing (404), client can't fix it.
         throw err;
@@ -144,7 +148,9 @@ export async function categorizeTasks() {
             collectionId: APPWRITE_COLLECTION_TASKS,
             queries: query
         });
-        const allDocs = listResult.called ? listResult.value.documents : (await db.listDocuments(APPWRITE_DATABASE, APPWRITE_COLLECTION_TASKS, query)).documents;
+        const rawDocs = listResult.called ? listResult.value.documents : (await db.listDocuments(APPWRITE_DATABASE, APPWRITE_COLLECTION_TASKS, query)).documents;
+        // Safety filter to prevent categorizing tasks that don't belong to current user
+        const allDocs = (rawDocs || []).filter(d => d.userId === userId);
         
         // Filter tasks that need categorization (null category OR 'General')
         // Skip "Blocked" tasks - they should never be auto-categorized
