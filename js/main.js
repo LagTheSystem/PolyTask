@@ -6,6 +6,7 @@ import { initTaskModal, initScheduleModal, initEditModal } from './modals.js';
 import { initTimer } from './timer.js';
 import { showToast, formatDateISO, fireConfetti } from './ui.js';
 import { categorizeTasks, autoSchedule, listUserTasks, createUserTask, updateUserTask, deleteUserTask } from './tasks.js';
+import { parseSmartInput } from './parser.js';
 
 // Global state for theme
 let currentTheme = localStorage.getItem('theme') || 'light';
@@ -194,6 +195,7 @@ window.PolyTask = {
     createUserTask: createUserTask,
     updateUserTask: updateUserTask,
     deleteUserTask: deleteUserTask,
+    parseSmartInput: parseSmartInput,
     fireConfetti: fireConfetti,
     
     // Dashboard Focus Widget Logic
