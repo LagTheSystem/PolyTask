@@ -4,6 +4,10 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>PolyTask — Dashboard</title>
+  <link rel="manifest" href="../manifest.json">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="theme-color" content="#4f46e5">
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><style>path{fill:%23465775}@media(prefers-color-scheme:dark){path{fill:%23a5b4fc}}</style><path d='M12 2L2 7l10 5 10-5-10-5zm0 9l2.5-1.25L12 12l-10-5v2l10 5 10-5v-2l-2.5 1.25L12 11zm0 5l2.5-1.25L12 17l-10-5v2l10 5 10-5v-2l-2.5 1.25L12 16z'/></svg>">
   <link rel="stylesheet" href="../styles.css">
   <script>window.APPWRITE_ENDPOINT = 'https://nyc.cloud.appwrite.io/v1';</script>
@@ -53,6 +57,9 @@
     
     .stat-box:nth-child(3) { border-top: 4px solid var(--mint); }
     .stat-box:nth-child(3) .value { color: var(--mint); }
+
+    .stat-box:nth-child(4) { border-top: 4px solid var(--violet); }
+    .stat-box:nth-child(4) .value { color: var(--violet); }
 
     .insight-card {
       background: linear-gradient(135deg, var(--dark-slate), var(--primary));
@@ -151,6 +158,10 @@
         <h3>Efficiency</h3>
         <div class="value" id="statRate">-</div>
       </div>
+      <div class="stat-box">
+        <h3>Daily Streak</h3>
+        <div class="value" id="statStreak">-</div>
+      </div>
       
       <!-- Focus Widget integrated into grid -->
       <div class="stat-box focus-widget">
@@ -196,6 +207,9 @@
               <label style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.5rem;">
                   <input type="checkbox" id="darkModeToggle"> Dark Mode
               </label>
+              <h3>Data</h3>
+              <button class="btn btn-outline" onclick="handleClearCompleted()" style="width:100%; margin-bottom:1rem; color:var(--coral); border-color:var(--border-color);">Clear Completed Tasks</button>
+              
               <h3>Account</h3>
               <button class="btn btn-outline" onclick="PolyTask.logout()">Sign Out</button>
           </div>
@@ -214,6 +228,24 @@
         "Keep pushing forward.",
         "Your potential is limitless."
     ];
+
+    async function handleClearCompleted() {
+        if(!confirm('Are you sure you want to delete all completed tasks? This cannot be undone.')) return;
+        const btn = document.querySelector('button[onclick="handleClearCompleted()"]');
+        const oldText = btn.textContent;
+        btn.textContent = 'Deleting...';
+        btn.disabled = true;
+        try {
+            const count = await PolyTask.clearCompletedTasks();
+            alert(`Deleted ${count} tasks.`);
+            window.location.reload();
+        } catch(e) {
+            console.error(e);
+            alert('Error clearing tasks.');
+            btn.textContent = oldText;
+            btn.disabled = false;
+        }
+    }
 
     document.addEventListener('DOMContentLoaded', async () => {
         // Init PolyTask
@@ -266,6 +298,13 @@
              const rate = recentTasks.length ? Math.round((recentCompleted / recentTasks.length) * 100) : 0;
              document.getElementById('statRate').textContent = `${rate}%`;
 
+             // Streak
+             if (PolyTask.calculateStreak) {
+                 const streak = PolyTask.calculateStreak(tasks);
+                 const fire = streak > 0 ? ' 🔥' : '';
+                 document.getElementById('statStreak').textContent = streak + fire;
+             }
+
              // 4. Task Summary Text
              let summary = '';
              if (dueToday.length > 0) {
@@ -280,19 +319,6 @@
                  summary = "You're all caught up! Enjoy your free time.";
              }
              document.getElementById('taskSummary').innerHTML = summary;
-
-             // Dark Mode Sync
-             const toggle = document.getElementById('dmToggle');
-             const modalToggle = document.getElementById('darkModeToggle');
-             
-             if(document.body.classList.contains('dark')) {
-                 if(toggle) toggle.checked = true;
-                 if(modalToggle) modalToggle.checked = true;
-             }
-             
-             const handleToggle = () => { if(window.toggleDarkMode) window.toggleDarkMode(); };
-             if(toggle) toggle.addEventListener('change', handleToggle);
-             if(modalToggle) modalToggle.addEventListener('change', handleToggle);
 
         } catch (e) {
             console.error(e);

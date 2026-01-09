@@ -13,6 +13,7 @@ import {
     startOfDay 
 } from './ui.js';
 import { getCurrentDay, loadAndRender } from './calendar.js';
+import { parseSmartInput } from './parser.js';
 
 function parseHHMM(str) {
     if (!str || typeof str !== 'string' || !/^[0-9]{2}:[0-9]{2}$/.test(str)) return null;
@@ -282,9 +283,6 @@ export function initEditModal() {
 
     return { openGeneralEditModal };
 }
-
-import { parseSmartInput } from './parser.js';
-
 // --- Create Task Modal ---
 export function initTaskModal() {
     const createBtn = document.getElementById('createTaskBtn'); 

@@ -1,5 +1,10 @@
 
-import { formatDateISO } from './ui.js';
+function getLocalYMD(d) {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+}
 
 export function parseSmartInput(text) {
     const result = { title: text || '', date: null, time: null, duration: null };
@@ -62,12 +67,12 @@ export function parseSmartInput(text) {
     if (addedDays > 0) {
         const targetDate = new Date();
         targetDate.setDate(now.getDate() + addedDays);
-        result.date = formatDateISO(targetDate);
+        result.date = getLocalYMD(targetDate);
     } else if (!result.date) {
         // Default to today if only time is specified? Or keep null for "Someday"?
         // If time is specified, implies upcoming occurrence.
         if (result.time) {
-            result.date = formatDateISO(now);
+            result.date = getLocalYMD(now);
         }
     }
 

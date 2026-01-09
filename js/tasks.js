@@ -384,9 +384,9 @@ export async function categorizeTasks() {
             delete updatePayload.$updatedAt;
             delete updatePayload.$permissions;
             
-            return invokeWithCompat(db, 'updateDocument', [APPWRITE_DATABASE, userId, task.$id, updatePayload], {
+            return invokeWithCompat(db, 'updateDocument', [APPWRITE_DATABASE, APPWRITE_COLLECTION_TASKS, task.$id, updatePayload], {
                 databaseId: APPWRITE_DATABASE,
-                collectionId: userId,
+                collectionId: APPWRITE_COLLECTION_TASKS,
                 documentId: task.$id,
                 data: updatePayload
             });
@@ -526,4 +526,42 @@ export async function autoSchedule(currentDay) {
         console.error('Auto-schedule error', err);
         throw err;
     }
+}
+
+export function calculateStreak(tasks) {
+    if (!tasks || !tasks.length) return 0;
+    const completed = tasks.filter(t => t.complete);
+    if (!completed.length) return 0;
+    const dates = completed.map(t => {
+        const d = new Date(t.$updatedAt || t.$createdAt);
+        return d.toISOString().split('T')[0];
+    }).sort().reverse();
+    const uniqueDates = [...new Set(dates)];
+    if (uniqueDates.length === 0) return 0;
+    let checkDate = new Date();
+    let checkStr = checkDate.toISOString().split('T')[0];
+    if (!uniqueDates.includes(checkStr)) {
+        checkDate.setDate(checkDate.getDate() - 1);
+        checkStr = checkDate.toISOString().split('T')[0];
+        if (!uniqueDates.includes(checkStr)) return 0;
+    }
+    let streak = 0;
+    while (true) {
+        if (uniqueDates.includes(checkStr)) {
+            streak++;
+            checkDate.setDate(checkDate.getDate() - 1);
+            checkStr = checkDate.toISOString().split('T')[0];
+        } else {
+            break;
+        }
+    }
+    return streak;
+}
+
+export async function clearCompletedTasks() {
+    const tasks = await listUserTasks();
+    const completed = tasks.filter(t => t.complete);
+    if (!completed.length) return 0;
+    await Promise.all(completed.map(t => deleteUserTask(t.$id)));
+    return completed.length;
 }

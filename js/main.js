@@ -5,7 +5,7 @@ import { loadAndRender, adjustCurrentDay, getCurrentDay, setCurrentDay, setViewM
 import { initTaskModal, initScheduleModal, initEditModal } from './modals.js';
 import { initTimer } from './timer.js';
 import { showToast, formatDateISO, fireConfetti } from './ui.js';
-import { categorizeTasks, autoSchedule, listUserTasks, createUserTask, updateUserTask, deleteUserTask } from './tasks.js';
+import { categorizeTasks, autoSchedule, listUserTasks, createUserTask, updateUserTask, deleteUserTask, calculateStreak, clearCompletedTasks } from './tasks.js';
 import { parseSmartInput } from './parser.js';
 
 // Global state for theme
@@ -197,6 +197,8 @@ window.PolyTask = {
     deleteUserTask: deleteUserTask,
     parseSmartInput: parseSmartInput,
     fireConfetti: fireConfetti,
+    calculateStreak: calculateStreak,
+    clearCompletedTasks: clearCompletedTasks,
     
     // Dashboard Focus Widget Logic
     focusState: {
