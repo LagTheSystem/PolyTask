@@ -1,13 +1,6 @@
 :root {
     --radius: 15px;
     /* Palette (from comment) */
-}
-
-/* Global Reset for box-sizing */
-*, *::before, *::after {
-    box-sizing: border-box;
-}
-
     --coral: #EF6F6C;   /* Coral Red */
     --dark-slate: #465775; /* Dark Slate Blue */
     --sandy: #F7B074;   /* Sandy Orange */
