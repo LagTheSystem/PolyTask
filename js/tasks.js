@@ -29,7 +29,11 @@ export async function listUserTasks() {
     // Use SINGLE TASKS COLLECTION
     // Filter by user ID (permissions handle this automatically if doc security is on, but explicit query is faster/cleaner)
     try {
-        const query = [ App.Query.equal('userId', userId) ];
+        const query = [ 
+            App.Query.equal('userId', userId),
+            // Optimize payload: Only fetch fields used by the UI
+            App.Query.select(['$id', 'userId', 'name', 'due', 'assigned', 'category', 'color', 'estimated_time', 'complete', 'repeat', 'priority'])
+        ];
         
         const modern = await invokeWithCompat(db, 'listDocuments', [APPWRITE_DATABASE, APPWRITE_COLLECTION_TASKS, query], {
             databaseId: APPWRITE_DATABASE,
@@ -141,8 +145,13 @@ export async function categorizeTasks() {
         const App = getAppwriteModule();
         const db = new App.Databases(client);
         
-        // Get all tasks (using global ID)
-        const query = [ App.Query.equal('userId', userId) ];
+        // Get tasks for ML context (optimized fetch)
+        // We only need name/category/color/id for determining categories
+        const query = [ 
+            App.Query.equal('userId', userId),
+            App.Query.select(['$id', 'userId', 'name', 'category', 'color'])
+        ];
+
         const listResult = await invokeWithCompat(db, 'listDocuments', [APPWRITE_DATABASE, APPWRITE_COLLECTION_TASKS, query], {
             databaseId: APPWRITE_DATABASE,
             collectionId: APPWRITE_COLLECTION_TASKS,
@@ -373,16 +382,9 @@ export async function categorizeTasks() {
             if (task.category === finalCategory && task.color === finalColor) return;
 
             const updatePayload = {
-                ...task,
                 category: finalCategory,
                 color: finalColor
             };
-            delete updatePayload.$id;
-            delete updatePayload.$collectionId;
-            delete updatePayload.$databaseId;
-            delete updatePayload.$createdAt;
-            delete updatePayload.$updatedAt;
-            delete updatePayload.$permissions;
             
             return invokeWithCompat(db, 'updateDocument', [APPWRITE_DATABASE, APPWRITE_COLLECTION_TASKS, task.$id, updatePayload], {
                 databaseId: APPWRITE_DATABASE,
