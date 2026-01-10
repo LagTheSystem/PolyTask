@@ -72,6 +72,24 @@ body {
     display: flex;
     flex-direction: column;
 }
+
+/* Shared header row used on inner pages (calendar/tasks/etc) */
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    padding-bottom: 1rem;
+    margin-bottom: 1.25rem;
+    border-bottom: 1px solid var(--border-color);
+}
+.page-header h1 { margin: 0; }
+.page-header_actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
 /* Card / centered container used by login/signup pages */
 .card {
     width: 360px;
@@ -556,7 +574,7 @@ button:not(.btn):not(.icon-btn):not(.btn-outline):not(.toggle-btn):not(.complete
 button:not(.btn):not(.icon-btn):not(.btn-outline):not(.toggle-btn):not(.complete-btn):hover { filter: brightness(.95); transform: translateY(-1px); }
 label {
     display: block;
-    margin: 10px 0 5px;
+    margin: 10px 0;
     font-weight: bold;
     align-content: center;
 }
