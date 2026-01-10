@@ -1,0 +1,224 @@
+.dashboard-header {
+  margin-bottom: 2rem;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 1rem;
+}
+
+.dashboard-header h1 {
+  margin: 0;
+  font-size: 2rem;
+  color: var(--primary);
+}
+
+.dashboard-header p {
+  margin: 0.5rem 0 0;
+  color: var(--muted);
+}
+
+.stats-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.stat-box {
+  background: var(--bg);
+  padding: 1.5rem;
+  border-radius: 12px;
+  text-align: center;
+  border: 1px solid var(--border-color);
+  transition: transform 0.2s;
+  flex: 1 1 200px;
+  max-width: 320px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.stat-box span,
+.stat-box .value,
+.stat-box h3,
+.insight-card,
+#welcome {
+  user-select: none;
+}
+
+.stat-box h3 {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  color: var(--muted);
+  letter-spacing: 0.05em;
+  margin: 0 0 0.5rem 0;
+}
+
+.stat-box .value {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--primary);
+  line-height: 1;
+}
+
+/* Color integration */
+.stat-box:nth-child(1) {
+  border-top: 4px solid var(--sandy);
+}
+.stat-box:nth-child(1) .value {
+  color: var(--sandy);
+}
+
+.stat-box:nth-child(2) {
+  border-top: 4px solid var(--coral);
+}
+.stat-box:nth-child(2) .value {
+  color: var(--coral);
+}
+
+.stat-box:nth-child(3) {
+  border-top: 4px solid var(--mint);
+}
+.stat-box:nth-child(3) .value {
+  color: var(--mint);
+}
+
+.stat-box:nth-child(4) {
+  border-top: 4px solid var(--violet);
+}
+.stat-box:nth-child(4) .value {
+  color: var(--violet);
+}
+
+.insight-card {
+  background: var(--dark-slate);
+  color: white;
+  padding: 2rem;
+  border-radius: 12px;
+  margin-bottom: 2rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.insight-card h2 {
+  margin-top: 0;
+  color: white;
+}
+
+.action-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1rem;
+}
+
+.action-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  background: var(--bg);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  text-decoration: none;
+  color: var(--primary);
+  transition: all 0.2s;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.action-btn:hover {
+  background: var(--card-bg);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transform: translateY(-2px);
+  border-color: currentColor;
+}
+
+.action-btn svg {
+  width: 32px;
+  height: 32px;
+  margin-bottom: 0.75rem;
+  color: currentColor;
+}
+
+/* Quick Action Colors */
+.action-grid > :nth-child(1) {
+  color: var(--violet);
+}
+.action-grid > :nth-child(2) {
+  color: var(--dark-cyan);
+}
+.action-grid > :nth-child(3) {
+  color: var(--cadet);
+}
+
+.focus-widget {
+  grid-column: 1 / -1;
+  background: var(--card-bg);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.5rem;
+  border: 1px dashed var(--primary);
+  gap: 10px;
+}
+
+@media (max-width: 600px) {
+  .focus-widget {
+    flex-direction: column;
+    gap: 0.5rem;
+    text-align: center;
+  }
+
+  /* Compact Insight Card */
+  .insight-card {
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border-radius: 8px;
+  }
+
+  /* Compact Stats Grid */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+  }
+
+  /* Compact Stat Box */
+  .stat-box {
+    flex: none;
+    width: auto;
+    max-width: none;
+    padding: 1rem 0.25rem;
+    border-radius: 8px;
+  }
+
+  .stat-box .value {
+    font-size: 1.75rem;
+  }
+
+  /* Compact Focus Widget */
+  .focus-widget {
+    grid-column: 1 / -1;
+    border-radius: 8px;
+    padding: 1rem;
+  }
+
+  /* Compact Action Buttons */
+  .action-grid {
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 0.5rem;
+  }
+
+  .action-btn {
+    padding: 0.75rem 0.25rem;
+    font-size: 0.75rem;
+    text-align: center;
+    border-radius: 8px;
+  }
+
+  .action-btn svg {
+    width: 24px;
+    height: 24px;
+    margin-bottom: 0.25rem;
+  }
+}
