@@ -21,6 +21,10 @@
     z-index: 5;
 }
 
+.input-wrapper label {
+    top: 20%;
+}
+
 #formError {
     text-align: center;
 }
