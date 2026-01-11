@@ -30,6 +30,35 @@ function weekStartOf(date) {
     return d;
 }
 
+function isModalOpen(modalEl) {
+    return !!(modalEl && modalEl.classList && modalEl.classList.contains('is-open'));
+}
+
+function openModal(modalEl) {
+    if (!modalEl) return;
+    modalEl.classList.add('is-open');
+    modalEl.setAttribute('aria-hidden', 'false');
+}
+
+function closeModal(modalEl) {
+    if (!modalEl) return;
+    modalEl.classList.remove('is-open');
+    modalEl.setAttribute('aria-hidden', 'true');
+}
+
+function bindModalDismissal(modalEl, onClose) {
+    if (!modalEl || typeof onClose !== 'function') return;
+    document.addEventListener('click', (e) => {
+        if (!isModalOpen(modalEl)) return;
+        if (e.target === modalEl) onClose();
+    });
+    document.addEventListener('keydown', (e) => {
+        if (e.key !== 'Escape') return;
+        if (!isModalOpen(modalEl)) return;
+        onClose();
+    });
+}
+
 // --- Schedule Modal Logic ---
 let scheduleExistingDocs = [];
 
@@ -37,6 +66,7 @@ export function initScheduleModal() {
     const schedulePopup = document.getElementById('createTaskBtn-popup');
     const defineScheduleModal = document.getElementById('defineScheduleModal');
     const cancelScheduleBtn = document.getElementById('cancelSchedule');
+    const closeScheduleBtn = document.getElementById('closeScheduleModal');
     const scheduleForm = document.getElementById('scheduleForm');
     const repeatWeeklyEl = document.getElementById('repeatWeekly');
 
@@ -106,7 +136,7 @@ export function initScheduleModal() {
     function openScheduleModal() {
         clearScheduleUI();
         populateScheduleFromExisting().finally(() => {
-            defineScheduleModal.style.display = 'flex';
+            openModal(defineScheduleModal);
         });
     }
 
@@ -117,9 +147,15 @@ export function initScheduleModal() {
         });
     }
     if (cancelScheduleBtn && defineScheduleModal) {
-        cancelScheduleBtn.addEventListener('click', () => {
-            defineScheduleModal.style.display = 'none';
-        });
+        cancelScheduleBtn.addEventListener('click', () => closeModal(defineScheduleModal));
+    }
+
+    if (closeScheduleBtn && defineScheduleModal) {
+        closeScheduleBtn.addEventListener('click', () => closeModal(defineScheduleModal));
+    }
+
+    if (defineScheduleModal) {
+        bindModalDismissal(defineScheduleModal, () => closeModal(defineScheduleModal));
     }
 
     if (scheduleForm) {
@@ -192,7 +228,7 @@ export function initScheduleModal() {
                         .filter(d => d && d.$id && !seenDocIds.has(d.$id))
                         .map(d => deleteUserTask(d.$id))
                 );
-                defineScheduleModal.style.display = 'none';
+                closeModal(defineScheduleModal);
                 await loadAndRender();
                 showToast('Schedule updated', 'success');
             } catch (err) {
@@ -210,6 +246,7 @@ export function initEditModal() {
     const editEventModal = document.getElementById('editEventModal');
     const editEventForm = document.getElementById('editEventForm');
     const cancelEditEventBtn = document.getElementById('cancelEditEvent');
+    const closeEditEventBtn = document.getElementById('closeEditEvent');
     const editDocId = document.getElementById('editDocId');
     const editTitle = document.getElementById('editTitle');
     const editDate = document.getElementById('editDate');
@@ -222,8 +259,11 @@ export function initEditModal() {
     const editCompleted = document.getElementById('editCompleted');
 
     function pad2(n) { return String(n).padStart(2, '0'); }
-    function closeEditModal() { if (editEventModal) editEventModal.style.display = 'none'; }
+    function closeEditModal() { closeModal(editEventModal); }
     if (cancelEditEventBtn) cancelEditEventBtn.addEventListener('click', closeEditModal);
+    if (closeEditEventBtn) closeEditEventBtn.addEventListener('click', closeEditModal);
+
+    if (editEventModal) bindModalDismissal(editEventModal, closeEditModal);
 
     function openGeneralEditModal(task) {
         if (!editEventModal) return;
@@ -244,7 +284,7 @@ export function initEditModal() {
         if (editColor) editColor.value = (String(task.color||'').startsWith('#') ? task.color : '#3b82f6');
         if (editRepeatWeekly) editRepeatWeekly.checked = !!task.repeat;
         if (editCompleted) editCompleted.checked = !!task.completed;
-        editEventModal.style.display = 'flex';
+        openModal(editEventModal);
     }
 
     if (editEventForm) {
@@ -288,6 +328,7 @@ export function initTaskModal() {
     const createBtn = document.getElementById('createTaskBtn'); 
     const modal = document.getElementById('taskModal'); 
     const cancelBtn = document.getElementById('cancelTask'); 
+    const closeBtn = document.getElementById('closeTaskModal');
     const taskForm = document.getElementById('taskCreateForm');
     
     function openCreateModal(dateStr, timeStr) {
@@ -299,7 +340,7 @@ export function initTaskModal() {
         document.getElementById('taskCreateForm').reset();
         if (dateEl) dateEl.value = dateStr || formatDateISO(getCurrentDay());
         if (timeEl) timeEl.value = timeStr || '';
-        modal.style.display = 'flex';
+        openModal(modal);
         if (smartInput) smartInput.focus(); else if (title) title.focus();
     }
 
@@ -308,7 +349,9 @@ export function initTaskModal() {
             openCreateModal(formatDateISO(getCurrentDay()));
         });
     }
-    if (cancelBtn && modal) cancelBtn.addEventListener('click', () => { modal.style.display = 'none'; });
+    if (cancelBtn && modal) cancelBtn.addEventListener('click', () => closeModal(modal));
+    if (closeBtn && modal) closeBtn.addEventListener('click', () => closeModal(modal));
+    if (modal) bindModalDismissal(modal, () => closeModal(modal));
     
     const smartInput = document.getElementById('smartInput');
     if (smartInput) {
@@ -361,7 +404,7 @@ export function initTaskModal() {
             
             try { 
                 await createUserTask(taskData); 
-                modal.style.display='none'; 
+                closeModal(modal);
                 taskForm.reset(); 
                 await loadAndRender(); 
                 showToast('Task created', 'success');

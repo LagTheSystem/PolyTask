@@ -29,6 +29,7 @@
 }
 
 /* Dark Mode Overrides */
+:root.dark,
 body.dark {
     --bg: #0f172a;
     --card-bg: #1e293b;
@@ -39,29 +40,42 @@ body.dark {
     
     /* Tweaked accents for dark mode contrast */
     --coral: #f87171;
-    --dark-slate: #818cf8;
+    --dark-slate: #575fa9;
     --violet: #c084fc;
 }
 
-body.dark .task-item, 
-body.dark .card, 
+:root.dark .task-item,
+body.dark .task-item,
+:root.dark .card,
+body.dark .card,
+:root.dark .stat-card,
 body.dark .stat-card,
+:root.dark .action-card,
 body.dark .action-card,
+:root.dark .smart-add-box,
 body.dark .smart-add-box,
+:root.dark .nav-tab.active,
 body.dark .nav-tab.active {
     background: var(--card-bg);
     border-color: #334155;
     color: #f1f5f9;
 }
-body.dark .smart-add-box input, body.dark input { color: white; }
 
+:root.dark .smart-add-box input,
+body.dark .smart-add-box input,
+:root.dark input,
+body.dark input { color: white; }
+
+:root.dark .input-wrapper input,
 body.dark .input-wrapper input,
+:root.dark .input-wrapper select,
 body.dark .input-wrapper select {
     background: #0f172a; 
     border-color: #334155;
     color: white;
 }
 
+html { background-color: var(--bg); }
 body {
     margin: 0;
     padding: 0;
@@ -71,6 +85,24 @@ body {
     min-height: 100vh;
     display: flex;
     flex-direction: column;
+}
+
+/* Shared header row used on inner pages (calendar/tasks/etc) */
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    padding-bottom: 1rem;
+    margin-bottom: 1.25rem;
+    border-bottom: 1px solid var(--border-color);
+}
+.page-header h1 { margin: 0; }
+.page-header_actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
 }
 /* Card / centered container used by login/signup pages */
 .card {
@@ -89,24 +121,7 @@ body {
     margin: 0 0 1rem;
 }
 
-/* Hero section on the homepage */
-.hero {
-    padding: 3.5rem 1rem;
-    text-align: center;
-    background: transparent;
-}
-.hero .hero-content { max-width: 880px; margin: 0 auto; }
-.hero h1 { font-size: 2.25rem; margin-bottom: 0.25rem; color: var(--violet); }
-.hero .lead { font-size: 1.05rem; color: var(--muted); margin-bottom: 1.25rem; }
-
-.cta-row { display:flex; gap:0.75rem; justify-content:center; align-items:center; margin-top:1rem; }
 .btn-outline { background: transparent; color: var(--primary); border: 1px solid color-mix(in srgb, var(--primary) 12%, black 2%); font-weight:600; padding: 0.75rem 1rem; }
-
-.features.card { margin: 1.5rem auto; padding: 1.25rem; }
-.features-grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:1rem; margin-top:1rem; }
-.feature { padding:0.75rem; background: #fbfbfe; border-radius:0.6rem; border: 1px solid rgba(16,24,40,0.03); }
-.feature h3 { margin:0 0 0.5rem; color: var(--dark-slate); }
-.feature p { margin:0; color: var(--muted); font-size:0.95rem }
 
 /* Floating label input wrapper */
 .input-wrapper {
@@ -132,8 +147,8 @@ body {
 .input-wrapper input::placeholder { color: transparent; }
 .input-wrapper label {
     position: absolute;
-    left: 0.95rem;
-    top: 20%; /* sit slightly above center when blurred */
+    left: 0.9rem;
+    top: 30%; /* sit slightly above center when blurred */
     transform: translateY(-50%);
     transform-origin: left center;
     color: var(--muted);
@@ -174,105 +189,6 @@ body {
     text-align: left; /* Always left align selects */
     padding-right: 2rem; /* Make room for arrow if present */
     cursor: pointer;
-}
-/* Wrapper for the floating action buttons */
-#createTaskBtn-wrapper {
-    position: fixed;
-    right: 18px;
-    bottom: 28px;
-    width: 56px;
-    height: 56px;
-    z-index: 1000;
-    /* Ensure the popup can be seen when it moves outside */
-    display: flex;
-    justify-content: center;
-    transition: bottom 0.2s ease-out; /* animate change in position */
-}
-
-/* Adjust position when above the footer if it gets too close */
-/* We can't detect scroll position with pure CSS easily for this dynamic footer. 
-   Instead, we will add a generous bottom margin to the main content so the scroll ends before the button hits the footer,
-   OR we can use JS to detecting overlap. 
-   Given the constraint, a safer bet here is to just raise the button slightly if we want it to clear, or trust the user wants JS.
-   But user asked to "make sure". Let's update the body/main bottom padding or use JS.
-   
-   Actually, the simplest reliable fix for "don't touch the footer" when the footer is at the bottom of the document
-   is ensuring the main scrollable area has enough padding at the bottom so the content ends, 
-   but the button is `position: fixed`.
-   
-   If the footer is also scrolling into view (not fixed footer), then the fixed button WILL overlap it if we scroll down.
-   To prevent overlap, we need to check footer offset.
-*/
-
-
-/* The schedule/clock button sitting on top */
-#createTaskBtn-popup {
-    position: absolute;
-    bottom: 48px; /* Start slightly tucked in */
-    width: 28px; /* Half width of 56px */
-    height: 28px;
-    background-color: #d1d5db; /* Lighter Gray */
-    color: white;
-    border-radius: 14px 14px 0 0; /* Circle top */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all .35s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Smooth spring-like eased transition */
-    transition-delay: 0.05s;
-    opacity: 0;
-    transform: translateY(10px); /* Reduced movement */
-    z-index: 0;
-    pointer-events: none;
-}
-
-#createTaskBtn-wrapper:hover #createTaskBtn-popup {
-    opacity: 1;
-    transform: translateY(0);
-    bottom: 52px; /* Stay slightly tucked behind to prevent gap during overshoot */
-    pointer-events: auto;
-}
-
-#createTaskBtn-popup:hover {
-    background-color: #e5e7eb;
-}
-
-#createTaskBtn{
-    width: 56px;
-    height: 56px;
-    font-size: 28px;
-    font-weight: 700;
-    border-radius: 6px; /* Square with rounded corners */
-    box-shadow: 0 6px 18px rgba(16,24,40,0.1);
-    background: none;
-    background-color: var(--celadon);
-    color: white;
-    border: none;
-    cursor: pointer;
-    transition: transform .12s ease, background-color .12s ease;
-    position: relative;
-    z-index: 1;
-    /* ensure perfect centering for the + glyph */
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0;            /* remove extra internal padding that can nudge content */
-    line-height: 1;        /* avoid font metrics shifting vertical centering */
-    text-align: center;
-}
-
-/* make svg inside the create button a reliable size and ensure it follows the button color */
-#createTaskBtn svg {
-    width: 20px;
-    height: 20px;
-    display: block;
-    pointer-events: none;
-    color: white; /* fallback; uses currentColor in svg path */
-}
-#createTaskBtn:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 10px 30px rgba(16,24,40,0.15);
-    background-color: #7faf66; /* slightly darker celadon on hover */
 }
 
 /* Make inputs inside .card ignore the older generic input rules below */
@@ -336,11 +252,10 @@ body {
 }
 .toggle-btn:hover { background: rgba(16,24,40,0.06); color: var(--primary); transform: translateY(calc(-50% - 1px)); }
 .toggle-btn[aria-pressed="true"] { background: var(--primary); color: white; border-color: var(--primary); }
-.input-wrapper input { padding-right: 4rem; }
 .input-wrapper input:not(:focus) { vertical-align: middle; }
 
 /* Shared base for all button-like elements to keep a consistent rhythm */
-.btn, .btn-outline, .icon-btn, .toggle-btn, .nav-day-btn, #createTaskBtn, button:not(.btn):not(.icon-btn):not(.btn-outline):not(.toggle-btn) {
+.btn, .btn-outline, .icon-btn, .toggle-btn, .nav-day-btn, #createTaskBtn, button:not(.btn):not(.icon-btn):not(.btn-outline):not(.toggle-btn):not(.complete-btn) {
     font-family: inherit;
     font-weight: 700;
     border-radius: 0.6rem;
@@ -431,7 +346,205 @@ body {
     font-size: 0.85rem;
     line-height: 1;
 }
-.error { color: #b00020; font-size:0.95rem; margin-top:0.5rem; }
+
+.modal {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.25rem;
+    background: rgba(2, 6, 23, 0.45);
+    backdrop-filter: blur(10px);
+    z-index: 2020;
+
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 140ms ease, visibility 0ms linear 140ms;
+}
+
+.modal.is-open {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transition: opacity 140ms ease;
+}
+
+.modal_panel {
+    width: 520px;
+    max-width: 100%;
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: calc(var(--radius) + 2px);
+    box-shadow: 0 24px 60px rgba(2, 6, 23, 0.28);
+    overflow-x: hidden;
+
+    max-height: calc(100vh - 2.5rem);
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+
+    opacity: 0;
+    transform: translateY(10px) scale(0.98);
+    transition: opacity 160ms ease, transform 160ms ease;
+}
+
+.modal.is-open .modal_panel {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+}
+
+.modal_panel--wide {
+    width: 760px;
+    max-width: 100%;
+}
+
+.modal_panel--narrow {
+    width: 380px;
+    max-width: 100%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .modal,
+    .modal_panel {
+        transition: none;
+    }
+
+    .modal_panel {
+        transform: none;
+    }
+}
+
+.modal_header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1.25rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.modal_title {
+    margin: 0;
+    font-size: 1.25rem;
+    line-height: 1.2;
+    color: var(--primary);
+}
+
+.modal_subtitle {
+    margin: 0.35rem 0 0;
+    color: var(--muted);
+    font-size: 0.95rem;
+}
+
+.modal_close {
+    min-width: 40px;
+    height: 40px;
+    border-radius: 999px;
+    font-size: 1.25rem;
+    line-height: 1;
+}
+
+.modal_body {
+    padding: 1rem 1.25rem;
+    display: grid;
+    gap: 1rem;
+    overflow: auto;
+    min-height: 0;
+}
+
+.modal_body .input-wrapper {
+    margin-bottom: .5rem;
+}
+
+.modal_footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    padding: 1rem 1.25rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.modal_footer--split {
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal_footer .btn,
+.modal_footer .btn-outline {
+    width: auto;
+}
+
+.switch {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 28px;
+}
+
+.switch input {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.switch_track {
+    width: 100%;
+    height: 100%;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--muted) 30%, transparent 70%);
+    border: 1px solid var(--border-color);
+    transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.switch_thumb {
+    position: absolute;
+    left: 4px;
+    top: 50%;
+    width: 22px;
+    height: 22px;
+    border-radius: 999px;
+    transform: translateY(-50%);
+    background: var(--card-bg);
+    box-shadow: 0 6px 18px rgba(2, 6, 23, 0.12);
+    transition: transform 0.15s ease;
+    cursor: pointer;
+}
+
+.switch input:checked ~ .switch_track {
+    background: var(--primary);
+    border-color: color-mix(in srgb, var(--accent) 35%, var(--border-color) 65%);
+}
+
+.switch input:checked ~ .switch_thumb {
+    transform: translate(20px, -50%);
+}
+
+.switch input:focus-visible ~ .switch_track {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+}
+
+.switch-row {
+    display: inline-flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    user-select: none;
+}
+
+.switch-row_text {
+    font-weight: 650;
+    color: var(--primary);
+}
+.error { color: var(--accent); font-size:0.95rem; margin-top:0.5rem; }
 /*footer {
     background-color: #465775;
     color: azure;
@@ -447,10 +560,9 @@ body {
 /* Use a column flex layout so the footer sits at the bottom when content is short,
     but remains in the normal flow (not fixed/sticky) so users can scroll away. */
 footer {
-    background: var(--primary);
+    background: var(--dark-slate);
     color: white;
     text-align: center;
-    padding: 22px 0;
     width: 100%;
     border-radius: var(--radius) var(--radius) 0 0;
     margin-top: auto;
@@ -462,7 +574,7 @@ h1{
     font-weight: 700;
 }
 /* Generic page buttons — avoid overriding component buttons like .btn, .icon-btn, .btn-outline */
-button:not(.btn):not(.icon-btn):not(.btn-outline):not(.toggle-btn) {
+button:not(.btn):not(.icon-btn):not(.btn-outline):not(.toggle-btn):not(.complete-btn) {
     display: block;
     margin: 20px auto;
     background: var(--accent);
@@ -473,10 +585,10 @@ button:not(.btn):not(.icon-btn):not(.btn-outline):not(.toggle-btn) {
     font-size: 16px;
     border-radius: 0.6rem;
 }
-button:not(.btn):not(.icon-btn):not(.btn-outline):not(.toggle-btn):hover { filter: brightness(.95); transform: translateY(-1px); }
+button:not(.btn):not(.icon-btn):not(.btn-outline):not(.toggle-btn):not(.complete-btn):hover { filter: brightness(.95); transform: translateY(-1px); }
 label {
     display: block;
-    margin: 10px 0 5px;
+    margin: 10px 0;
     font-weight: bold;
     align-content: center;
 }
@@ -488,50 +600,14 @@ section {
     /*background-color: white;*/
     border-radius: var(--radius);
 }
-.calendar-grid {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 10px;
-}
 
-/* Larger card used by the calendar page so the calendar can fill ~80% of the viewport */
+/* Larger card used by the app pages so content can fill ~80% of the viewport */
 .card.calendar-large {
     width: 80vw;          /* target 80% of the viewport width */
     max-width: 1200px;    /* don't get absurdly wide on very large screens */
     margin: 2rem auto;    /* center and give vertical spacing */
     box-sizing: border-box; /* include padding in width */
 }
-
-/* Ensure calendar grid occupies full width of its container */
-.card.calendar-large .calendar-grid { width: 100%; }
-
-/* Make any .card that is rendered inside the calendar grid stretch to the full grid width
-   (the renderer creates a nested .card element; default .card width is narrow, so override it here) */
-.card.calendar-large .calendar-grid > .calendar-inner {
-    grid-column: 1 / -1;
-    width: 100%;
-    margin: 0 0 1rem 0; /* keep a small vertical gap but remove horizontal centering margin */
-    box-sizing: border-box;
-    background: transparent; /* remove inner card background so it sits inside the outer card */
-    box-shadow: none;        /* remove inner shadow */
-    padding: 0;              /* outer card handles padding */
-}
-
-/* Visual helpers for the calendar-inner header and spacing */
-.calendar-inner > div:first-child { margin-bottom: 8px; }
-
-/* Day view grid: left time column + right events column */
-.day-grid { display: flex; gap: 12px; align-items: flex-start; }
-.day-grid .time-column { width: 72px; flex: 0 0 72px; border-right: 1px solid rgba(16,24,40,0.06); box-sizing: border-box; padding-right: 10px; }
-.day-grid .time-slot { height: 48px; display:flex; align-items:center; font-size:0.875rem; color:var(--muted); padding-left:6px; }
-.day-grid .events-column { 
-    flex: 1 1 auto; 
-    min-width: 0; 
-    padding-left: 12px;
-    background-image: linear-gradient(to bottom, transparent 47px, rgba(16,24,40,0.06) 47px);
-    background-size: 100% 48px;
-}
-.day-grid .events-column .event-card { padding: 12px; margin-bottom: 8px; background: var(--card-bg); border-radius: 6px; box-sizing: border-box; width: 100%; }
 
 /* Responsive: Stack layout for mobile */
 @media (max-width: 640px) {
@@ -552,110 +628,26 @@ section {
         margin: 0;
         background: var(--card-bg); /* Seamless transition */
     }
-
-    /* Navigation row: stack buttons */
-    .nav-row {
-        flex-direction: column;
-        gap: 0.5rem;
-        align-items: stretch;
-    }
-    
-    .nav-row button, 
-    .nav-row .nav-day-btn {
-        width: 100%;
-        margin-left: 0 !important;
-        margin-right: 0 !important;
-        justify-content: center;
-    }
-
-    /* Date display centered */
-    #currentDateDisplay {
-        text-align: center;
-        margin: 0.25rem 0;
-        font-weight: 600;
-    }
-
-    /* Day Grid: Keep side-by-side but compact */
-    .day-grid {
-        display: flex;
-        flex-direction: row;
-    }
-
-    /* Compress time column */
-    .day-grid .time-column {
-        width: 35px; /* Narrower than desktop */
-        flex: 0 0 auto;
-        padding-right: 2px;
-        border-right: 1px solid rgba(16,24,40,0.08);
-    }
-    
-    .day-grid .time-slot {
-        font-size: 0.7rem; /* Smaller font */
-        text-align: right;
-        padding-right: 2px;
-    }
-    
-    /* Events column takes remaining width */
-    .day-grid .events-column {
-        padding-left: 4px; /* Less padding */
-    }
-    
-    /* Event cards roughly same but maybe smaller text */
-    .event-card {
-        padding: 8px !important;
-    }
-    .event-card .title {
-        font-size: 0.85rem;
-    }
-    .event-card .time {
-        font-size: 0.75rem;
-    }
-    
-    /* Hide some details on very small screens if needed, 
-       or just let them wrap */
-    
-    /* Modal adjustments */
-    #taskModal .card {
-        width: 90% !important;
-        max-width: 360px;
-    }
 }
 
-  /* --- Loading Spinner --- */
-  .btn-loading {
-      position: relative;
-      color: transparent !important;
-      pointer-events: none;
-  }
-  .btn-loading:after {
-      content: "";
-      position: absolute;
-      top: 50%; left: 50%;
-      width: 16px; height: 16px;
-      margin: -8px 0 0 -8px;
-      border: 2px solid rgba(255,255,255,0.5);
-      border-top-color: white;
-      border-radius: 50%;
-      animation: spin 0.8s infinite linear;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
-
-  /* --- Empty State Hint --- */
-  .events-column.has-hint::after {
-      content: "Double-click anywhere to add a task";
-      position: absolute;
-      top: 40%;
-      left: 0;
-      right: 0;
-      text-align: center;
-      color: var(--cadet);
-      opacity: 0.2;
-      font-size: 1.5rem;
-      font-weight: 700;
-      pointer-events: none;
-      transform: rotate(-5deg);
-  }
-.day-grid .events-column .empty { opacity: .6; padding: 8px 0; }
+/* --- Loading Spinner --- */
+.btn-loading {
+    position: relative;
+    color: transparent !important;
+    pointer-events: none;
+}
+.btn-loading:after {
+    content: "";
+    position: absolute;
+    top: 50%; left: 50%;
+    width: 16px; height: 16px;
+    margin: -8px 0 0 -8px;
+    border: 2px solid rgba(255,255,255,0.5);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.8s infinite linear;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
 /* --- Toast Notifications --- */
 #toast-container {
     position: fixed;
@@ -694,113 +686,13 @@ section {
     to { opacity: 0; transform: translateY(10px); }
 }
 
-.event-card.dropping {
-    animation: fadeInDrop 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
-}
-
-@keyframes fadeInDrop {
-    from { opacity: 0; transform: scale(0.96) translateY(-4px); }
-    to { opacity: 1; transform: scale(1) translateY(0); }
-}
-.current-time-line {
-    position: absolute;
-    left: 0;
-    right: 0;
-    height: 2px;
-    background: var(--coral);
-    z-index: 5;
-    pointer-events: none;
-}
-.current-time-line::before {
-    content: "";
-    position: absolute;
-    left: -6px;
-    top: -4px;
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    background: var(--coral);
-}
-
-/* --- Drag and Resize --- */
-.event-card {
-    /* cursor: grab; already pointer */
-    transition: box-shadow 0.2s, transform 0.1s;
-    user-select: none;
-    z-index: 10;
-}
-.event-card:active {
-    cursor: grabbing;
-    z-index: 20;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.2) !important;
-}
-.event-card.dragging {
-    opacity: 0;
-    box-shadow: none !important;
-    pointer-events: none;
-}
-.event-card:hover {
-    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-    transform: translateY(-2px);
-    z-index: 15; /* ensure it pops over others slightly */
-}
-.resize-handle {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 14px;
-    cursor: ns-resize;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background: transparent;
-}
-.resize-handle::after {
-    content: "";
-    width: 4px;
-    height: 4px;
-    background: rgba(255,255,255,0.5);
-    border-radius: 50%;
-    box-shadow: 8px 0 0 rgba(255,255,255,0.5), -8px 0 0 rgba(255,255,255,0.5);
-    transition: all 0.2s ease;
-}
-.resize-handle:hover::after {
-    background: rgba(255,255,255,0.9);
-    box-shadow: 8px 0 0 rgba(255,255,255,0.9), -8px 0 0 rgba(255,255,255,0.9);
-}
-
 /* --- Accessibility & Focus --- */
 button:focus-visible, .btn:focus-visible, .icon-btn:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible {
     outline: 2px solid var(--primary);
     outline-offset: 2px;
 }
 
-/* --- Conflict Visuals --- */
-.event-card.conflict {
-    border: 2px solid var(--coral) !important;
-}
-.event-card.conflict::before {
-    content: "!";
-    position: absolute;
-    top: -6px; right: -6px;
-    width: 18px; height: 18px;
-    background: var(--coral);
-    color: white;
-    border-radius: 50%;
-    font-size: 11px;
-    font-weight: bold;
-    display: flex; align-items: center; justify-content: center;
-    z-index: 10;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.2);
-}
 
-
-/* --- Inline Styles Migrated --- */
-.schedule-modal { width: 720px; max-width: calc(100% - 2rem); }
-.edit-event-modal { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.35); z-index: 110; }
-.edit-event-card { width: 750px; max-width: calc(100% - 2rem); }
-.schedule-actions-wrapper { position: sticky; bottom: 0; display: flex; align-items: center; justify-content: space-between; margin-top: 12px; gap: 8px; }
 
 /* Confetti */
 .confetti { position: fixed; width: 8px; height: 8px; z-index: 9999; pointer-events: none; opacity: 0.8; }

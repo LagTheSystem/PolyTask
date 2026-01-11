@@ -1,0 +1,134 @@
+h1 {
+    color: var(--dark-cyan);
+}
+
+.filters-row {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.task-list {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.task-item {
+  background: var(--card-bg);
+  padding: 1rem;
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  transition: all 0.2s;
+  color: inherit;
+}
+
+.task-item:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  transform: translateY(-1px);
+  border-color: var(--primary);
+}
+
+.task-item.completed {
+  opacity: 0.6;
+}
+
+.task-item.completed span {
+  text-decoration: line-through;
+}
+
+.checkbox-round {
+  width: 22px;
+  height: 22px;
+  border: 2px solid var(--muted);
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.2s;
+}
+
+.checkbox-round.checked {
+  background: var(--success);
+  border-color: var(--success);
+  color: white;
+}
+
+.task-meta {
+  margin-left: auto;
+  font-size: 0.8rem;
+  color: var(--muted);
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.badge {
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: white;
+}
+
+.badge.high {
+  background: #ff8a8a;
+}
+
+.badge.medium {
+  background: #ffda60;
+}
+
+.badge.low {
+  background: #5ae785;
+}
+
+/* Smart Input Header */
+.smart-add-box {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 2rem;
+  position: relative;
+}
+
+#quickAddInput {
+  width: 100%;
+  height: 52px;
+  line-height: normal;
+  padding: 0 1rem 0 4.5rem !important;
+  border: 1px solid #e0e0e0;
+  border-radius: 0.8rem;
+  background: var(--card-bg);
+  font-size: 1.05rem;
+  outline: none;
+  transition: all 0.2s ease;
+  color: inherit;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+}
+
+#quickAddInput:focus {
+  border-color: color-mix(in srgb, var(--info) 85%, black 5%);
+  box-shadow: 0 6px 18px color-mix(in srgb, var(--primary) 6%, transparent 94%);
+}
+
+.smart-add-box span {
+  position: absolute;
+  left: 20px;
+  top: 0;
+  height: 95%;
+  display: flex;
+  align-items: center;
+  font-size: 1.5rem;
+  color: var(--primary);
+  pointer-events: none;
+  z-index: 5;
+}

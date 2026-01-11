@@ -4,8 +4,11 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>PolyTask — Calendar</title>
+  <meta name="color-scheme" content="light dark">
+  <script src="../js/theme-init.js"></script>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><style>path{fill:%23465775}@media(prefers-color-scheme:dark){path{fill:%23a5b4fc}}</style><path d='M12 2L2 7l10 5 10-5-10-5zm0 9l2.5-1.25L12 12l-10-5v2l10 5 10-5v-2l-2.5 1.25L12 11zm0 5l2.5-1.25L12 17l-10-5v2l10 5 10-5v-2l-2.5 1.25L12 16z'/></svg>">
   <link rel="stylesheet" href="../styles.css">
+  <link rel="stylesheet" href="../calendar/calendar.css">
   <script>window.APPWRITE_ENDPOINT = 'https://nyc.cloud.appwrite.io/v1';</script>
   <script src="https://cdn.jsdelivr.net/npm/appwrite@21.4.0"></script>
   <script type="module" src="../js/main.js"></script>
@@ -136,8 +139,13 @@
           </div>
 
           <div class="actions-wrapper" style="position:sticky;bottom:0;display:flex;align-items:center;justify-content:space-between;margin-top:12px;gap:8px;">
-            <label style="display:flex;align-items:center;gap:8px;">
-              <input type="checkbox" id="repeatWeekly" checked /> Repeat weekly
+            <label class="switch-row">
+              <span class="switch-row_text">Repeat weekly</span>
+              <span class="switch">
+                <input type="checkbox" id="repeatWeekly" checked aria-label="Repeat weekly">
+                <span class="switch_track" aria-hidden="true"></span>
+                <span class="switch_thumb" aria-hidden="true"></span>
+              </span>
             </label>
             <div class="actions" style="display:flex;gap:.5rem;justify-content:flex-end;">
             <button type="button" id="cancelSchedule" class="btn-outline">Cancel</button>
@@ -192,12 +200,22 @@
               <label for="editCategory">Category</label>
             </div>
           </div>
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px;">
-            <label style="display:flex;align-items:center;gap:8px;">
-              <input id="editRepeatWeekly" type="checkbox" /> Repeat weekly
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px;gap:12px;flex-wrap:wrap;">
+            <label class="switch-row">
+              <span class="switch-row_text">Repeat weekly</span>
+              <span class="switch">
+                <input id="editRepeatWeekly" type="checkbox" aria-label="Repeat weekly">
+                <span class="switch_track" aria-hidden="true"></span>
+                <span class="switch_thumb" aria-hidden="true"></span>
+              </span>
             </label>
-            <label style="display:flex;align-items:center;gap:8px;">
-              <input id="editCompleted" type="checkbox" /> Completed
+            <label class="switch-row">
+              <span class="switch-row_text">Completed</span>
+              <span class="switch">
+                <input id="editCompleted" type="checkbox" aria-label="Completed">
+                <span class="switch_track" aria-hidden="true"></span>
+                <span class="switch_thumb" aria-hidden="true"></span>
+              </span>
             </label>
           </div>
           <div style="display:flex;gap:.5rem;justify-content:flex-end;margin-top:12px;">

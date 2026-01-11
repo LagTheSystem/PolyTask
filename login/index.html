@@ -4,11 +4,14 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>Sign in — PolyTask</title>
+    <meta name="color-scheme" content="light dark">
+    <script src="../js/theme-init.js"></script>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><style>path{fill:%23465775}@media(prefers-color-scheme:dark){path{fill:%23a5b4fc}}</style><path d='M12 2L2 7l10 5 10-5-10-5zm0 9l2.5-1.25L12 12l-10-5v2l10 5 10-5v-2l-2.5 1.25L12 11zm0 5l2.5-1.25L12 17l-10-5v2l10 5 10-5v-2l-2.5 1.25L12 16z'/></svg>">
     <link rel="stylesheet" href="../styles.css">
-        <script>window.APPWRITE_ENDPOINT = 'https://nyc.cloud.appwrite.io/v1';</script>
-        <script src="https://cdn.jsdelivr.net/npm/appwrite@21.4.0"></script>
-        <script type="module" src="../js/main.js"></script>
+    <link rel="stylesheet" href="./login.css">
+    <script>window.APPWRITE_ENDPOINT = 'https://nyc.cloud.appwrite.io/v1';</script>
+    <script src="https://cdn.jsdelivr.net/npm/appwrite@21.4.0"></script>
+    <script type="module" src="../js/main.js"></script>
 </head>
 <body style="display:flex; flex-direction:column; min-height:100vh;">
     <main class="card" role="main" aria-labelledby="signin-heading" style="margin: auto;">
@@ -25,11 +28,11 @@
             <div class="input-wrapper">
                 <input id="password" name="password" type="password" autocomplete="current-password" required minlength="8" placeholder=" " aria-describedby="passwordHelp" />
                 <label for="password">Password</label>
-                <button type="button" id="togglePassword" class="icon-btn toggle-btn" aria-pressed="false" title="Show password" style="position:absolute; right:10px; top:50%; transform:translateY(-50%); z-index:5;">Show</button>
+                <button type="button" id="togglePassword" class="icon-btn toggle-btn" aria-pressed="false" title="Show password">Show</button>
                 <div id="passwordHelp" class="helper">Minimum 8 characters.</div>
             </div>
 
-            <div class="row" style="margin-top:.25rem;">
+            <div id="login-options" class="row" style="margin-top:.25rem;">
                 <label class="checkbox">
                     <input type="checkbox" id="remember" name="remember" />
                     <span class="checkbox-custom" aria-hidden="true"></span>
@@ -42,7 +45,7 @@
                 <button class="btn" type="submit">Sign in</button>
             </div>
 
-            <div style="text-align:center;margin-top:.5rem;font-size:.9rem;color:var(--muted);">
+            <div id="create-account">
                 New to PolyTask? <a href="../signup/index.html" class="muted-link">Create an account</a>
             </div>
 
@@ -51,7 +54,7 @@
     </main>
 </body>
 <footer>
-    <p>2026 PolyTask. Made with &#10084; by Neal Sharma</p>
+    <p>&copy; 2026 PolyTask. Made with &#10084; by Neal Sharma</p>
     <i class="fab fa-github"></i>
 </footer>
 </html>

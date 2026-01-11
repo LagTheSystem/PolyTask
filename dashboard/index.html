@@ -1,5 +1,6 @@
 <!doctype html>
 <html lang="en">
+
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
@@ -8,180 +9,35 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="theme-color" content="#4f46e5">
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><style>path{fill:%23465775}@media(prefers-color-scheme:dark){path{fill:%23a5b4fc}}</style><path d='M12 2L2 7l10 5 10-5-10-5zm0 9l2.5-1.25L12 12l-10-5v2l10 5 10-5v-2l-2.5 1.25L12 11zm0 5l2.5-1.25L12 17l-10-5v2l10 5 10-5v-2l-2.5 1.25L12 16z'/></svg>">
+  <meta name="color-scheme" content="light dark">
+  <script src="../js/theme-init.js"></script>
+  <link rel="icon" type="image/svg+xml"
+    href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><style>path{fill:%23465775}@media(prefers-color-scheme:dark){path{fill:%23a5b4fc}}</style><path d='M12 2L2 7l10 5 10-5-10-5zm0 9l2.5-1.25L12 12l-10-5v2l10 5 10-5v-2l-2.5 1.25L12 11zm0 5l2.5-1.25L12 17l-10-5v2l10 5 10-5v-2l-2.5 1.25L12 16z'/></svg>">
   <link rel="stylesheet" href="../styles.css">
+  <link rel="stylesheet" href="./dashboard.css">
   <script>window.APPWRITE_ENDPOINT = 'https://nyc.cloud.appwrite.io/v1';</script>
   <script src="https://cdn.jsdelivr.net/npm/appwrite@21.4.0"></script>
   <script type="module" src="../js/main.js"></script>
-  <style>
-    /* Dashboard specific styling */
-    .dashboard-header {
-      margin-bottom: 2rem;
-      border-bottom: 1px solid var(--border-color);
-      padding-bottom: 1rem;
-    }
-    .dashboard-header h1 { margin: 0; font-size: 2rem; color: var(--primary); }
-    .dashboard-header p { margin: 0.5rem 0 0; color: var(--muted); }
-
-    .stats-grid {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 1.5rem;
-      margin-bottom: 2rem;
-    }
-    .stat-box {
-      background: var(--bg);
-      padding: 1.5rem;
-      border-radius: 12px;
-      text-align: center;
-      border: 1px solid var(--border-color);
-      transition: transform 0.2s;
-      flex: 1 1 200px;
-      max-width: 320px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-    }
-    .stat-box:hover { transform: translateY(-2px); }
-    .stat-box h3 { font-size: 0.85rem; text-transform: uppercase; color: var(--muted); letter-spacing: 0.05em; margin: 0 0 0.5rem 0; }
-    .stat-box .value { font-size: 2.5rem; font-weight: 700; color: var(--primary); line-height: 1; }
-    
-    /* Color integration */
-    .stat-box:nth-child(1) { border-top: 4px solid var(--sandy); }
-    .stat-box:nth-child(1) .value { color: var(--sandy); }
-    
-    .stat-box:nth-child(2) { border-top: 4px solid var(--coral); }
-    .stat-box:nth-child(2) .value { color: var(--coral); }
-    
-    .stat-box:nth-child(3) { border-top: 4px solid var(--mint); }
-    .stat-box:nth-child(3) .value { color: var(--mint); }
-
-    .stat-box:nth-child(4) { border-top: 4px solid var(--violet); }
-    .stat-box:nth-child(4) .value { color: var(--violet); }
-
-    .insight-card {
-      background: linear-gradient(135deg, var(--dark-slate), var(--primary));
-      color: white;
-      padding: 2rem;
-      border-radius: 12px;
-      margin-bottom: 2rem;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    }
-    .insight-card h2 { margin-top: 0; color: white; }
-    
-    .action-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-      gap: 1rem;
-    }
-    .action-btn {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 1.5rem;
-      background: var(--bg);
-      border: 1px solid var(--border-color);
-      border-radius: 12px;
-      text-decoration: none;
-      color: var(--primary);
-      transition: all 0.2s;
-      cursor: pointer;
-      font-weight: 600;
-    }
-    .action-btn:hover {
-      background: white;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-      transform: translateY(-2px);
-      border-color: currentColor;
-    }
-    .action-btn svg {
-      width: 32px;
-      height: 32px;
-      margin-bottom: 0.75rem;
-      color: currentColor;
-    }
-
-    /* Quick Action Colors */
-    .action-grid > :nth-child(1) { color: var(--violet); }
-    .action-grid > :nth-child(2) { color: var(--dark-cyan); }
-    .action-grid > :nth-child(3) { color: var(--cadet); }
-
-    .focus-widget {
-        grid-column: 1 / -1;
-        background: var(--card-bg);
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 1.5rem;
-        border: 1px dashed var(--primary);
-    }
-    @media(max-width: 600px) {
-        .focus-widget { flex-direction: column; gap: 0.5rem; text-align: center; }
-        
-        /* Compact Insight Card */
-        .insight-card {
-             padding: 1rem;
-             margin-bottom: 1rem;
-             border-radius: 8px;
-        }
-        
-        /* Compact Stats Grid */
-        .stats-grid {
-             display: grid;
-             grid-template-columns: 1fr 1fr;
-             gap: 0.5rem;
-        }
-        
-        /* Compact Stat Box */
-        .stat-box {
-             flex: none;
-             width: auto; 
-             max-width: none;
-             padding: 1rem 0.25rem;
-             border-radius: 8px;
-        }
-        .stat-box .value { font-size: 1.75rem; }
-        
-        /* Compact Focus Widget */
-        .focus-widget { 
-             grid-column: 1 / -1; 
-             border-radius: 8px;
-             padding: 1rem;
-        }
-
-        /* Compact Action Buttons */
-        .action-grid {
-             grid-template-columns: 1fr 1fr 1fr;
-             gap: 0.5rem;
-        }
-        .action-btn {
-             padding: 0.75rem 0.25rem;
-             font-size: 0.75rem;
-             text-align: center;
-             border-radius: 8px;
-        }
-        .action-btn svg { width: 24px; height: 24px; margin-bottom: 0.25rem; }
-    }
-  </style>
 </head>
+
 <body>
-  
+
   <main class="card calendar-large">
     <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:1rem;">
-       <div>
-         <h1 id="userGreeting" style="margin:0; font-size:2rem; color:var(--dark-slate);">Hello!</h1>
-         <p id="dateDisplay" style="color:var(--muted); margin-top:0.25rem;">loading...</p>
-       </div>
-       <div style="display:flex; gap:0.5rem; align-items:center;">
-          <!-- Simple Dark Mode Toggle Icon -->
-          <label style="cursor:pointer; padding:0.5rem;" title="Toggle Dark Mode">
-             <input type="checkbox" id="dmToggle" style="display:none">
-             <svg viewBox="0 0 24 24" width="22" height="22" fill="none" class="dm-icon" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
-          </label>
-       </div>
+      <div id="welcome">
+        <h1 id="userGreeting" style="margin:0; font-size:2rem; color:var(--primary);">Hello!</h1>
+        <p id="dateDisplay" style="color:var(--muted); margin-top:0.25rem;">loading...</p>
+      </div>
+      <div style="display:flex; gap:0.5rem; align-items:center;">
+        <!-- Simple Dark Mode Toggle Icon -->
+        <label style="cursor:pointer; padding:0.5rem;" title="Toggle Dark Mode">
+          <input type="checkbox" id="dmToggle" style="display:none">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" class="dm-icon" stroke="currentColor"
+            stroke-width="2">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+          </svg>
+        </label>
+      </div>
     </div>
 
     <div class="insight-card">
@@ -206,16 +62,18 @@
         <h3>Daily Streak</h3>
         <div class="value" id="statStreak">-</div>
       </div>
-      
+
       <!-- Focus Widget integrated into grid -->
       <div class="stat-box focus-widget">
-        <div style="text-align:left;">
-            <h3 style="margin-bottom:0;">Focus Session</h3>
-            <span id="focusDisplay" style="font-family:monospace; font-size:1.5rem; font-weight:700;">25:00</span>
+        <div>
+          <h3 style="margin-bottom:0;">Focus Session</h3>
+          <span id="focusDisplay" style="font-family:monospace; font-size:1.5rem; font-weight:700;">25:00</span>
         </div>
         <div style="display:flex; gap:0.5rem;">
-            <button class="btn primary" onclick="PolyTask.toggleFocus()" style="padding:0.5rem 1.5rem; width:auto;">Start</button>
-            <button class="btn-outline" onclick="PolyTask.resetFocus()" style="padding:0.5rem 1rem; width:auto;">Reset</button>
+          <button class="btn primary" onclick="PolyTask.toggleFocus()"
+            style="padding:0.5rem 1.5rem; width:auto;">Start</button>
+          <button class="btn-outline" onclick="PolyTask.resetFocus()"
+            style="padding:0.5rem 1rem; width:auto;">Reset</button>
         </div>
       </div>
     </div>
@@ -223,15 +81,27 @@
     <h3 style="color:var(--muted); margin-bottom:1rem;">Quick Actions</h3>
     <div class="action-grid">
       <a href="../calendar/index.html" class="action-btn">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+          <line x1="16" y1="2" x2="16" y2="6" />
+          <line x1="8" y1="2" x2="8" y2="6" />
+          <line x1="3" y1="10" x2="21" y2="10" />
+        </svg>
         Planner
       </a>
       <a href="../tasks/index.html" class="action-btn">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M9 11l3 3L22 4" />
+          <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+        </svg>
         My Tasks
       </a>
-      <div class="action-btn" onclick="document.getElementById('settingsModal').style.display='flex'">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      <div class="action-btn" onclick="openSettings()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="3" />
+          <path
+            d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+        </svg>
         Settings
       </div>
     </div>
@@ -243,131 +113,187 @@
   </footer>
 
   <!-- Settings Modal -->
-  <div id="settingsModal" style="display:none;position:fixed;inset:0;align-items:center;justify-content:center;background:rgba(0,0,0,0.35);z-index:2000;">
-      <div class="card" style="width:400px; max-width:90%;">
-          <h2>Settings</h2>
-          <div style="margin:1rem 0;">
-              <h3>Appearance</h3>
-              <label style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.5rem;">
-                  <input type="checkbox" id="darkModeToggle"> Dark Mode
-              </label>
-              <h3>Data</h3>
-              <button class="btn btn-outline" onclick="handleClearCompleted()" style="width:100%; margin-bottom:1rem; color:var(--coral); border-color:var(--border-color);">Clear Completed Tasks</button>
-              
-              <h3>Account</h3>
-              <button class="btn btn-outline" onclick="PolyTask.logout()">Sign Out</button>
-          </div>
-          <div style="display:flex;justify-content:flex-end;">
-              <button class="btn" onclick="document.getElementById('settingsModal').style.display='none'" style="width:auto; padding: 0.5rem 1.5rem;">Close</button>
-          </div>
+  <div
+    id="settingsModal"
+    class="modal"
+    role="dialog"
+    aria-modal="true"
+    aria-hidden="true"
+    aria-labelledby="settingsTitle"
+  >
+    <div class="modal_panel" role="document">
+      <div class="modal_header">
+        <div>
+          <h2 id="settingsTitle" class="modal_title">Settings</h2>
+          <p class="modal_subtitle">Personalize PolyTask</p>
+        </div>
+        <button type="button" class="icon-btn modal_close" onclick="closeSettings()" aria-label="Close settings">×</button>
       </div>
+
+      <div class="modal_body">
+        <section class="settings-section" aria-labelledby="settingsAppearance">
+          <h3 id="settingsAppearance">Appearance</h3>
+          <label class="settings-row">
+            <span class="settings-row_text">
+              <span class="settings-label">Dark mode</span>
+              <span class="settings-help">Reduce eye strain in low light.</span>
+            </span>
+            <span class="switch">
+              <input type="checkbox" id="darkModeToggle" aria-label="Toggle dark mode">
+              <span class="switch_track" aria-hidden="true"></span>
+              <span class="switch_thumb" aria-hidden="true"></span>
+            </span>
+          </label>
+        </section>
+
+        <section class="settings-section" aria-labelledby="settingsData">
+          <h3 id="settingsData">Data</h3>
+          <p class="settings-help" style="margin-top:-0.25rem;">Clean up tasks you’ve already finished.</p>
+          <button class="btn-outline settings-danger" type="button" onclick="handleClearCompleted()">Clear completed tasks</button>
+        </section>
+
+        <section class="settings-section" aria-labelledby="settingsAccount">
+          <h3 id="settingsAccount">Account</h3>
+          <button class="btn-outline settings-btn" type="button" onclick="PolyTask.logout()">Sign out</button>
+        </section>
+      </div>
+
+      <div class="modal_footer">
+        <button class="btn" type="button" onclick="closeSettings()" style="width:auto;">Done</button>
+      </div>
+    </div>
   </div>
 
   <script>
     const MESSAGES = [
-        "Ready to conquer the day?",
-        "One task at a time, you've got this.",
-        "Consistency is key.",
-        "Small steps lead to big focus.",
-        "Keep pushing forward.",
-        "Your potential is limitless."
+      "Ready to conquer the day?",
+      "One task at a time, you've got this.",
+      "Consistency is key.",
+      "Small steps lead to big focus.",
+      "Keep pushing forward.",
+      "Your potential is limitless."
     ];
 
     async function handleClearCompleted() {
-        if(!confirm('Are you sure you want to delete all completed tasks? This cannot be undone.')) return;
-        const btn = document.querySelector('button[onclick="handleClearCompleted()"]');
-        const oldText = btn.textContent;
-        btn.textContent = 'Deleting...';
-        btn.disabled = true;
-        try {
-            const count = await PolyTask.clearCompletedTasks();
-            alert(`Deleted ${count} tasks.`);
-            window.location.reload();
-        } catch(e) {
-            console.error(e);
-            alert('Error clearing tasks.');
-            btn.textContent = oldText;
-            btn.disabled = false;
-        }
+      if (!confirm('Are you sure you want to delete all completed tasks? This cannot be undone.')) return;
+      const btn = document.querySelector('button[onclick="handleClearCompleted()"]');
+      const oldText = btn.textContent;
+      btn.textContent = 'Deleting...';
+      btn.disabled = true;
+      try {
+        const count = await PolyTask.clearCompletedTasks();
+        alert(`Deleted ${count} tasks.`);
+        window.location.reload();
+      } catch (e) {
+        console.error(e);
+        alert('Error clearing tasks.');
+        btn.textContent = oldText;
+        btn.disabled = false;
+      }
     }
 
+    function openSettings() {
+      const modal = document.getElementById('settingsModal');
+      modal.classList.add('is-open');
+      modal.setAttribute('aria-hidden', 'false');
+    }
+
+    function closeSettings() {
+      const modal = document.getElementById('settingsModal');
+      modal.classList.remove('is-open');
+      modal.setAttribute('aria-hidden', 'true');
+    }
+
+    // Close modal on backdrop click / Escape
+    document.addEventListener('click', (e) => {
+      const modal = document.getElementById('settingsModal');
+      if (!modal?.classList.contains('is-open')) return;
+      if (e.target === modal) closeSettings();
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key !== 'Escape') return;
+      const modal = document.getElementById('settingsModal');
+      if (modal?.classList.contains('is-open')) closeSettings();
+    });
+
     document.addEventListener('DOMContentLoaded', async () => {
-        // Init PolyTask
-        try {
-             // Poll for module load
-             if (!window.PolyTask) await new Promise(r => { 
-                const i = setInterval(() => { if(window.PolyTask){clearInterval(i); r();} }, 50); 
-             });
+      // Init PolyTask
+      try {
+        // Poll for module load
+        if (!window.PolyTask) await new Promise(r => {
+          const i = setInterval(() => { if (window.PolyTask) { clearInterval(i); r(); } }, 50);
+        });
 
-             const user = await PolyTask.getCurrentUser();
-             if (!user) {
-                 window.location.href = '../login/index.html';
-                 return;
-             }
-
-             // 1. Personalized Greeting
-             const h = new Date().getHours();
-             const timeGreet = h < 12 ? 'Good Morning' : h < 18 ? 'Good Afternoon' : 'Good Evening';
-             const name = user.name || 'Friend';
-             document.getElementById('userGreeting').innerHTML = `${timeGreet}, <span style="color:var(--accent);">${name}</span>`;
-             
-             // Date display
-             const dateOpts = { weekday: 'long', month: 'long', day: 'numeric' };
-             document.getElementById('dateDisplay').textContent = new Date().toLocaleDateString('en-US', dateOpts);
-
-             // 2. Random Motivational Message
-             const randMsg = MESSAGES[Math.floor(Math.random() * MESSAGES.length)];
-             document.getElementById('motivationalMessage').textContent = randMsg;
-
-             // 3. Stats Calculation
-             const tasks = await PolyTask.listUserTasks();
-             const pending = tasks.filter(t => !t.complete);
-             const todayStr = new Date().toISOString().slice(0,10);
-             const dueToday = pending.filter(t => t.due && t.due.startsWith(todayStr));
-             
-             // Efficiency: Last 7 days (based on Due Date)
-             const endOb = new Date(); endOb.setHours(23,59,59,999);
-             const startOb = new Date(); startOb.setDate(endOb.getDate() - 7); startOb.setHours(0,0,0,0);
-             
-             const recentTasks = tasks.filter(t => {
-                 if (!t.due) return false;
-                 const d = new Date(t.due);
-                 return d >= startOb && d <= endOb;
-             });
-             const recentCompleted = recentTasks.filter(t => t.complete).length;
-
-             document.getElementById('statPending').textContent = pending.length;
-             document.getElementById('statToday').textContent = dueToday.length;
-             
-             const rate = recentTasks.length ? Math.round((recentCompleted / recentTasks.length) * 100) : 0;
-             document.getElementById('statRate').textContent = `${rate}%`;
-
-             // Streak
-             if (PolyTask.calculateStreak) {
-                 const streak = PolyTask.calculateStreak(tasks);
-                 const fire = streak > 0 ? ' 🔥' : '';
-                 document.getElementById('statStreak').textContent = streak + fire;
-             }
-
-             // 4. Task Summary Text
-             let summary = '';
-             if (dueToday.length > 0) {
-                 const pMap = { high: 3, medium: 2, low: 1 };
-                 dueToday.sort((a,b) => (pMap[b.priority]||0) - (pMap[a.priority]||0));
-                 const topTask = dueToday[0];
-                 const pLabel = topTask.priority ? topTask.priority.charAt(0).toUpperCase() + topTask.priority.slice(1) : 'Medium';
-                 summary = `You have <strong>${dueToday.length}</strong> tasks for today. Your focus is: "<strong>${topTask.name}</strong>" <span style="font-size:0.8em;opacity:0.8;background:${topTask.priority==='high'?'var(--accent)':'var(--muted)'};color:white;padding:2px 6px;border-radius:4px;">${pLabel}</span>.`;
-             } else if (pending.length > 0) {
-                 summary = `No urgent tasks today, but <strong>${pending.length}</strong> pending items in your backlog.`;
-             } else {
-                 summary = "You're all caught up! Enjoy your free time.";
-             }
-             document.getElementById('taskSummary').innerHTML = summary;
-
-        } catch (e) {
-            console.error(e);
+        const user = await PolyTask.getCurrentUser();
+        if (!user) {
+          window.location.href = '../login/index.html';
+          return;
         }
+
+        // 1. Personalized Greeting
+        const h = new Date().getHours();
+        const timeGreet = h < 12 ? 'Good Morning' : h < 18 ? 'Good Afternoon' : 'Good Evening';
+        const name = user.name || 'Friend';
+        document.getElementById('userGreeting').innerHTML = `${timeGreet}, <span style="color:var(--accent);">${name}</span>`;
+
+        // Date display
+        const dateOpts = { weekday: 'long', month: 'long', day: 'numeric' };
+        document.getElementById('dateDisplay').textContent = new Date().toLocaleDateString('en-US', dateOpts);
+
+        // 2. Random Motivational Message
+        const randMsg = MESSAGES[Math.floor(Math.random() * MESSAGES.length)];
+        document.getElementById('motivationalMessage').textContent = randMsg;
+
+        // 3. Stats Calculation
+        const tasks = await PolyTask.listUserTasks();
+        const pending = tasks.filter(t => !t.complete);
+        const todayStr = new Date().toISOString().slice(0, 10);
+        const dueToday = pending.filter(t => t.due && t.due.startsWith(todayStr));
+
+        // Efficiency: Last 7 days (based on Due Date)
+        const endOb = new Date(); endOb.setHours(23, 59, 59, 999);
+        const startOb = new Date(); startOb.setDate(endOb.getDate() - 7); startOb.setHours(0, 0, 0, 0);
+
+        const recentTasks = tasks.filter(t => {
+          if (!t.due) return false;
+          const d = new Date(t.due);
+          return d >= startOb && d <= endOb;
+        });
+        const recentCompleted = recentTasks.filter(t => t.complete).length;
+
+        document.getElementById('statPending').textContent = pending.length;
+        document.getElementById('statToday').textContent = dueToday.length;
+
+        const rate = recentTasks.length ? Math.round((recentCompleted / recentTasks.length) * 100) : 0;
+        document.getElementById('statRate').textContent = `${rate}%`;
+
+        // Streak
+        if (PolyTask.calculateStreak) {
+          const streak = PolyTask.calculateStreak(tasks);
+          const fire = streak > 0 ? ' 🔥' : '';
+          document.getElementById('statStreak').textContent = streak + fire;
+        }
+
+        // 4. Task Summary Text
+        let summary = '';
+        if (dueToday.length > 0) {
+          const pMap = { high: 3, medium: 2, low: 1 };
+          dueToday.sort((a, b) => (pMap[b.priority] || 0) - (pMap[a.priority] || 0));
+          const topTask = dueToday[0];
+          const pLabel = topTask.priority ? topTask.priority.charAt(0).toUpperCase() + topTask.priority.slice(1) : 'Medium';
+          summary = `You have <strong>${dueToday.length}</strong> tasks for today. Your focus is: "<strong>${topTask.name}</strong>" <span style="font-size:0.8em;opacity:0.8;background:${topTask.priority === 'high' ? 'var(--accent)' : 'var(--muted)'};color:white;padding:2px 6px;border-radius:4px;">${pLabel}</span>.`;
+        } else if (pending.length > 0) {
+          summary = `No urgent tasks today, but <strong>${pending.length}</strong> pending items in your backlog.`;
+        } else {
+          summary = "You're all caught up! Enjoy your free time.";
+        }
+        document.getElementById('taskSummary').innerHTML = summary;
+
+      } catch (e) {
+        console.error(e);
+      }
     });
   </script>
 </body>
+
 </html>

@@ -1,0 +1,396 @@
+#editColor {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 48px;
+    padding: 10px;
+    margin: 0;
+    border: 1px solid #e6e6e6;
+    border-radius: 0.6rem;
+    background: var(--card-bg);
+    cursor: pointer;
+    box-sizing: border-box;
+    transition: box-shadow .12s ease, border-color .12s ease, transform .08s ease;
+}
+
+#editColor:hover {
+    border-color: color-mix(in srgb, var(--primary) 18%, #e6e6e6);
+    box-shadow: 0 10px 22px rgba(16,24,40,0.08);
+    transform: translateY(-1px);
+}
+
+#editColor:focus {
+    outline: none;
+}
+
+#editColor:focus-visible {
+    border-color: color-mix(in srgb, var(--info) 85%, black 5%);
+    box-shadow: 0 6px 18px color-mix(in srgb, var(--primary) 10%, transparent 90%);
+}
+
+#editColor::-webkit-color-swatch-wrapper {
+    padding: 0;
+}
+#editColor::-webkit-color-swatch {
+    border: none;
+    border-radius: 0.45rem;
+    box-shadow: inset 0 0 0 1px rgba(16,24,40,0.12);
+}
+
+#editColor::-moz-color-swatch {
+    border: none;
+    border-radius: 0.45rem;
+    box-shadow: inset 0 0 0 1px rgba(16,24,40,0.12);
+}
+
+.input-wrapper input[type="color"] + label {
+    top: -1.2rem;
+    transform: translateY(0) scale(0.82);
+    color: var(--primary);
+    background: var(--card-bg);
+    padding: 0 0.35rem;
+    font-size: 0.82rem;
+}
+
+:root.dark #editColor,
+body.dark #editColor {
+    background: #0f172a;
+    border-color: #334155;
+}
+
+:root.dark #editColor::-webkit-color-swatch,
+body.dark #editColor::-webkit-color-swatch,
+:root.dark #editColor::-moz-color-swatch,
+body.dark #editColor::-moz-color-swatch {
+    box-shadow: inset 0 0 0 1px rgba(148,163,184,0.45);
+}
+
+#editEventForm input {
+    text-align: left;
+}
+
+.complete-btn {
+    background: rgba(255, 255, 255, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    border-radius: 6px;
+    color: rgba(255, 255, 255, 0);
+    padding: 0px;
+    margin: 0px;
+    min-width: auto;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.2s;
+    position: absolute;
+    top: 50%;
+    right: 8px;
+    transform: translateY(-50%);
+}
+
+.complete-btn:hover {
+    background: rgba(255,255,255,0.5);
+}
+
+.complete-btn.completed {
+    color: white;
+}
+
+#createTaskBtn-wrapper {
+    position: fixed;
+    right: 18px;
+    bottom: 28px;
+    width: 56px;
+    height: 56px;
+    z-index: 1000;
+    display: flex;
+    justify-content: center;
+    transition: bottom 0.2s ease-out;
+}
+
+#createTaskBtn-popup {
+    position: absolute;
+    bottom: 48px;
+    width: 28px;
+    height: 28px;
+    background-color: #d1d5db;
+    color: white;
+    border-radius: 14px 14px 0 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all .35s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Smooth spring-like eased transition */
+    transition-delay: 0.05s;
+    opacity: 0;
+    transform: translateY(10px);
+    z-index: 0;
+    pointer-events: none;
+}
+
+#createTaskBtn-wrapper:hover #createTaskBtn-popup {
+    opacity: 1;
+    transform: translateY(0);
+    bottom: 52px;
+    pointer-events: auto;
+}
+
+#createTaskBtn-popup:hover {
+    background-color: #e5e7eb;
+}
+
+#createTaskBtn{
+    width: 56px;
+    height: 56px;
+    font-size: 28px;
+    font-weight: 700;
+    border-radius: 6px;
+    box-shadow: 0 6px 18px rgba(16,24,40,0.1);
+    background: none;
+    background-color: var(--mint);
+    color: white;
+    border: none;
+    cursor: pointer;
+    transition: transform .12s ease, background-color .12s ease;
+    position: relative;
+    z-index: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    line-height: 1;
+    text-align: center;
+}
+
+#createTaskBtn svg {
+    width: 20px;
+    height: 20px;
+    display: block;
+    pointer-events: none;
+    color: white; /* fallback; uses currentColor in svg path */
+}
+#createTaskBtn:hover {
+    box-shadow: 0 10px 30px rgba(16,24,40,0.15);
+}
+
+/* --- Calendar layout (moved from styles.css) --- */
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 10px;
+}
+
+/* Ensure calendar grid occupies full width of its container */
+.card.calendar-large .calendar-grid { width: 100%; }
+
+/* Make any .card that is rendered inside the calendar grid stretch to the full grid width
+   (the renderer creates a nested .card element; default .card width is narrow, so override it here) */
+.card.calendar-large .calendar-grid > .calendar-inner {
+    grid-column: 1 / -1;
+    width: 100%;
+    margin: 0 0 1rem 0;
+    box-sizing: border-box;
+    background: transparent;
+    box-shadow: none;
+    padding: 0;
+}
+
+/* Visual helpers for the calendar-inner header and spacing */
+.calendar-inner > div:first-child { margin-bottom: 8px; }
+
+/* Day view grid: left time column + right events column */
+.day-grid { display: flex; gap: 12px; align-items: flex-start; }
+.day-grid .time-column { width: 72px; flex: 0 0 72px; border-right: 1px solid rgba(16,24,40,0.06); box-sizing: border-box; padding-right: 10px; }
+.day-grid .time-slot { height: 48px; display:flex; align-items:center; font-size:0.875rem; color:var(--muted); padding-left:6px; }
+.day-grid .events-column {
+    flex: 1 1 auto;
+    min-width: 0;
+    padding-left: 12px;
+    background-image: linear-gradient(to bottom, transparent 47px, rgba(16,24,40,0.06) 47px);
+    background-size: 100% 48px;
+}
+.day-grid .events-column .event-card { padding: 12px; margin-bottom: 8px; background: var(--card-bg); border-radius: 6px; box-sizing: border-box; width: 100%; }
+
+/* Empty State Hint */
+.events-column.has-hint::after {
+    content: "Double-click anywhere to add a task";
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    text-align: center;
+    color: var(--cadet);
+    opacity: 0.2;
+    font-size: 1.5rem;
+    font-weight: 700;
+    pointer-events: none;
+    position: fixed;
+}
+.day-grid .events-column .empty { opacity: .6; padding: 8px 0; }
+
+.event-card.dropping {
+    animation: fadeInDrop 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+@keyframes fadeInDrop {
+    from { opacity: 0; transform: scale(0.96) translateY(-4px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.current-time-line {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--coral);
+    z-index: 5;
+    pointer-events: none;
+}
+.current-time-line::before {
+    content: "";
+    position: absolute;
+    left: -6px;
+    top: -4px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--coral);
+}
+
+/* Drag and Resize */
+.event-card {
+    transition: box-shadow 0.2s, transform 0.1s;
+    user-select: none;
+    z-index: 10;
+}
+.event-card:active {
+    cursor: grabbing;
+    z-index: 20;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2) !important;
+}
+.event-card.dragging {
+    opacity: 0;
+    box-shadow: none !important;
+    pointer-events: none;
+}
+.event-card:hover {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    transform: translateY(-2px);
+    z-index: 15;
+}
+.resize-handle {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 14px;
+    cursor: ns-resize;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: transparent;
+}
+.resize-handle::after {
+    content: "";
+    width: 4px;
+    height: 4px;
+    background: rgba(255,255,255,0.5);
+    border-radius: 50%;
+    box-shadow: 8px 0 0 rgba(255,255,255,0.5), -8px 0 0 rgba(255,255,255,0.5);
+    transition: all 0.2s ease;
+}
+.resize-handle:hover::after {
+    background: rgba(255,255,255,0.9);
+    box-shadow: 8px 0 0 rgba(255,255,255,0.9), -8px 0 0 rgba(255,255,255,0.9);
+}
+
+/* Conflict Visuals */
+.event-card.conflict {
+    border: 2px solid var(--coral) !important;
+}
+.event-card.conflict::before {
+    content: "!";
+    position: absolute;
+    top: -6px; right: -6px;
+    width: 18px; height: 18px;
+    background: var(--coral);
+    color: white;
+    border-radius: 50%;
+    font-size: 11px;
+    font-weight: bold;
+    display: flex; align-items: center; justify-content: center;
+    z-index: 10;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+}
+
+@media (max-width: 640px) {
+    /* Navigation row: stack buttons */
+    .nav-row {
+        flex-direction: column;
+        gap: 0.5rem;
+        align-items: stretch;
+    }
+
+    .nav-row button,
+    .nav-row .nav-day-btn {
+        width: 100%;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        justify-content: center;
+    }
+
+    /* Date display centered */
+    #currentDateDisplay {
+        text-align: center;
+        margin: 0.25rem 0;
+        font-weight: 600;
+    }
+
+    /* Day Grid: Keep side-by-side but compact */
+    .day-grid {
+        display: flex;
+        flex-direction: row;
+    }
+
+    /* Compress time column */
+    .day-grid .time-column {
+        width: 35px;
+        flex: 0 0 auto;
+        padding-right: 2px;
+        border-right: 1px solid rgba(16,24,40,0.08);
+    }
+
+    .day-grid .time-slot {
+        font-size: 0.7rem;
+        text-align: right;
+        padding-right: 2px;
+    }
+
+    /* Events column takes remaining width */
+    .day-grid .events-column {
+        padding-left: 4px;
+    }
+
+    /* Event cards roughly same but maybe smaller text */
+    .event-card {
+        padding: 8px !important;
+    }
+    .event-card .title {
+        font-size: 0.85rem;
+    }
+    .event-card .time {
+        font-size: 0.75rem;
+    }
+
+    /* Modal adjustments */
+    .modal {
+        padding: 0.75rem;
+    }
+
+    .modal_panel {
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+}

@@ -9,10 +9,23 @@ import { categorizeTasks, autoSchedule, listUserTasks, createUserTask, updateUse
 import { parseSmartInput } from './parser.js';
 
 // Global state for theme
-let currentTheme = localStorage.getItem('theme') || 'light';
+function getInitialTheme() {
+    const stored = localStorage.getItem('theme');
+    if (stored === 'dark' || stored === 'light') return stored;
+    const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    return prefersDark ? 'dark' : 'light';
+}
+
+let currentTheme = getInitialTheme();
 
 function initTheme() {
-    if (currentTheme === 'dark') document.body.classList.add('dark');
+    const root = document.documentElement;
+    const isDark = currentTheme === 'dark';
+
+    root.classList.toggle('dark', isDark);
+    if (document.body) document.body.classList.toggle('dark', isDark);
+
+    root.style.colorScheme = currentTheme;
 
     const toggleIds = ['toggleThemeBtn', 'dmToggle', 'darkModeToggle'];
     
@@ -27,10 +40,12 @@ function initTheme() {
         const el = document.getElementById(id);
         if (!el) return;
         
-        const handler = () => {
-             document.body.classList.toggle('dark');
-             currentTheme = document.body.classList.contains('dark') ? 'dark' : 'light';
-             localStorage.setItem('theme', currentTheme);
+           const handler = () => {
+               root.classList.toggle('dark');
+               if (document.body) document.body.classList.toggle('dark', root.classList.contains('dark'));
+               currentTheme = root.classList.contains('dark') ? 'dark' : 'light';
+               localStorage.setItem('theme', currentTheme);
+               root.style.colorScheme = currentTheme;
              
              // Sync all checkboxes
              toggleIds.forEach(oid => {
@@ -92,6 +107,10 @@ function initHotkeys(taskModalOpen) {
         if (e.key === 'Escape') {
              // Close any open modal
              document.querySelectorAll('.modal-overlay').forEach(m => m.style.display = 'none');
+             document.querySelectorAll('.modal.is-open').forEach(m => {
+                 m.classList.remove('is-open');
+                 m.setAttribute('aria-hidden', 'true');
+             });
         }
     });
 }
@@ -261,8 +280,11 @@ window.toggleDarkMode = () => {
     if (btn) {
         btn.click();
     } else {
-         document.body.classList.toggle('dark');
-         const currentTheme = document.body.classList.contains('dark') ? 'dark' : 'light';
+         const root = document.documentElement;
+         root.classList.toggle('dark');
+         if (document.body) document.body.classList.toggle('dark', root.classList.contains('dark'));
+         const currentTheme = root.classList.contains('dark') ? 'dark' : 'light';
          localStorage.setItem('theme', currentTheme);
+         root.style.colorScheme = currentTheme;
     }
 };

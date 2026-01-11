@@ -1,0 +1,30 @@
+#login-options {
+    margin: 0.25rem 0 .5rem;
+}
+
+.input-wrapper:nth-child(2) {
+    margin-bottom: .5rem;
+}
+
+#create-account {
+    text-align: center;
+    font-size: .9rem;
+    color: var(--muted);
+    margin-top: 1rem;
+}
+
+#togglePassword {
+    position: absolute;
+    right: 10px;
+    top: 35%;
+    transform: translateY(-50%);
+    z-index: 5;
+}
+
+.input-wrapper label {
+    top: 20%;
+}
+
+#formError {
+    text-align: center;
+}

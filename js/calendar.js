@@ -422,18 +422,10 @@ function renderCalendar(tasks) {
         btn.type = 'button';
         btn.title = it.completed ? 'Completed' : 'Mark complete';
         btn.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z"/></svg>';
-        if (it.completed) btn.disabled = true;
-
-        btn.style.background = 'rgba(255,255,255,0.3)';
-        btn.style.border = '1px solid rgba(255,255,255,0.4)';
-        btn.style.borderRadius = '6px';
-        btn.style.padding = '0'; btn.style.margin = '0'; btn.style.minWidth = 'auto';
-        btn.style.width = '24px'; btn.style.height = '24px';
-        btn.style.display = 'flex'; btn.style.alignItems = 'center'; btn.style.justifyContent = 'center';
-        btn.style.cursor = 'pointer'; btn.style.transition = 'background 0.2s ease';
-        btn.addEventListener('mouseenter', () => { btn.style.background = 'rgba(255,255,255,0.5)'; });
-        btn.addEventListener('mouseleave', () => { btn.style.background = 'rgba(255,255,255,0.3)'; });
-        btn.style.position = 'absolute'; btn.style.top = '50%'; btn.style.right = '8px'; btn.style.transform = 'translateY(-50%)';
+        if (it.completed) {
+            btn.disabled = true;
+            btn.classList.add('completed');
+        }
         card.appendChild(btn);
 
         const dur = document.createElement('div');
@@ -528,7 +520,7 @@ function renderCalendar(tasks) {
         btn.addEventListener('click', async (e) => {
             e && e.stopPropagation && e.stopPropagation();
             try {
-                card.classList.add('pop'); btn.classList.add('spin'); btn.disabled = true;
+                card.classList.add('pop'); btn.classList.add('completed'); btn.disabled = true;
                 const gray = resolveColor('gray');
                 card.style.background = gray; card.style.color = textColorFor(gray);
                 fireConfetti();
