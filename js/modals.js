@@ -7,10 +7,11 @@ import {
     autoSchedule,
     categorizeTasks
 } from './tasks.js';
-import { 
-    showToast, 
-    formatDateISO, 
-    startOfDay 
+import {
+    showToast,
+    formatDateISO,
+    startOfDay,
+    escapeHtml
 } from './ui.js';
 import { getCurrentDay, loadAndRender } from './calendar.js';
 import { parseSmartInput } from './parser.js';
@@ -79,7 +80,7 @@ export function initScheduleModal() {
                 <input type=\"time\" class=\"start\" aria-label=\"Start time\" value=\"${defaults && defaults.start ? defaults.start : ''}\">
                 <span style=\"opacity:.7;\">to</span>
                 <input type=\"time\" class=\"end\" aria-label=\"End time\" value=\"${defaults && defaults.end ? defaults.end : ''}\">
-                <input type=\"text\" class=\"label\" aria-label=\"What is this time for?\" placeholder=\"What is this time for?\" value=\"${defaults && defaults.label ? defaults.label.replace(/\\/g,'\\\\').replace(/"/g,'\\\"') : ''}\">
+                <input type=\"text\" class=\"label\" aria-label=\"What is this time for?\" placeholder=\"What is this time for?\" value=\"${defaults && defaults.label ? escapeHtml(defaults.label) : ''}\">
             <button type="button" class="remove-interval" title="Remove">×</button>
         `;
         row.querySelector('.remove-interval').addEventListener('click', () => {

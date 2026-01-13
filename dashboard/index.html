@@ -195,6 +195,13 @@
   </div>
 
   <script>
+    // XSS protection: escape HTML entities in user-controlled strings
+    function escapeHtml(s) {
+        return String(s || '').replace(/[&<>"']/g, c => ({
+            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+        }[c]));
+    }
+
     const MESSAGES = [
       "Ready to conquer the day?",
       "One task at a time, you've got this.",
@@ -263,7 +270,7 @@
         // 1. Personalized Greeting
         const h = new Date().getHours();
         const timeGreet = h < 12 ? 'Good Morning' : h < 18 ? 'Good Afternoon' : 'Good Evening';
-        const name = user.name || 'Friend';
+        const name = escapeHtml(user.name) || 'Friend';
         document.getElementById('userGreeting').innerHTML = `${timeGreet}, <span style="color:var(--accent);">${name}</span>`;
 
         // Date display
@@ -520,7 +527,7 @@
           dueToday.sort((a, b) => (pMap[b.priority] || 0) - (pMap[a.priority] || 0));
           const topTask = dueToday[0];
           const pLabel = topTask.priority ? topTask.priority.charAt(0).toUpperCase() + topTask.priority.slice(1) : 'Medium';
-          summary = `You have <strong>${dueToday.length}</strong> tasks for today. Your focus is: "<strong>${topTask.name}</strong>" <span style="font-size:0.8em;opacity:0.8;background:${topTask.priority === 'high' ? 'var(--accent)' : 'var(--muted)'};color:white;padding:2px 6px;border-radius:4px;">${pLabel}</span>.`;
+          summary = `You have <strong>${dueToday.length}</strong> tasks for today. Your focus is: "<strong>${escapeHtml(topTask.name)}</strong>" <span style="font-size:0.8em;opacity:0.8;background:${topTask.priority === 'high' ? 'var(--accent)' : 'var(--muted)'};color:white;padding:2px 6px;border-radius:4px;">${escapeHtml(pLabel)}</span>.`;
         } else if (pending.length > 0) {
           summary = `No urgent tasks today, but <strong>${pending.length}</strong> pending items in your backlog.`;
         } else {
