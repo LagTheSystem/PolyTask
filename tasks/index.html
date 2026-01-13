@@ -53,6 +53,20 @@
   </footer>
 
   <script>
+      // XSS protection: escape HTML entities in user-controlled strings
+      function escapeHtml(s) {
+          return String(s || '').replace(/[&<>"']/g, c => ({
+              '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+          }[c]));
+      }
+
+      // Sanitize CSS color values (only allow safe formats)
+      function sanitizeColor(color) {
+          if (!color) return null;
+          const safe = /^(#[0-9a-fA-F]{3,8}|[a-zA-Z]+|rgba?\([^)]+\)|hsla?\([^)]+\)|var\(--[a-zA-Z0-9-]+\))$/;
+          return safe.test(String(color).trim()) ? String(color).trim() : null;
+      }
+
       let currentFilter = 'all';
       let allFetchedTasks = []; // Client-side cache
 
@@ -113,8 +127,9 @@
               const priorityClass = (t.priority || 'medium').toLowerCase();
               const dateStr = t.due ? new Date(t.due).toLocaleDateString() : '';
               
-              const categoryPill = t.category 
-                ? `<span class="badge" style="background-color: ${t.color || 'var(--muted)'}; color: white; opacity: 0.9; margin-left:8px;">${t.category}</span>` 
+              const safeColor = sanitizeColor(t.color) || 'var(--muted)';
+              const categoryPill = t.category
+                ? `<span class="badge" style="background-color: ${safeColor}; color: white; opacity: 0.9; margin-left:8px;">${escapeHtml(t.category)}</span>`
                 : '';
 
               el.innerHTML = `
@@ -123,7 +138,7 @@
                   </div>
                   <div style="flex:1;">
                       <div style="font-weight:500; font-size:1.05rem;">
-                         <span class="title">${t.name}</span>
+                         <span class="title">${escapeHtml(t.name)}</span>
                          ${categoryPill}
                       </div>
                       <div style="font-size:0.85rem; color:var(--muted); margin-top:0.2rem;">
@@ -132,7 +147,7 @@
                       </div>
                   </div>
                   <div class="task-meta">
-                      <span class="badge ${priorityClass}">${t.priority || 'medium'}</span>
+                      <span class="badge ${escapeHtml(priorityClass)}">${escapeHtml(t.priority || 'medium')}</span>
                       <button class="icon-btn" onclick="deleteTask('${t.$id}')" style="color:var(--coral); opacity:0.5;">&times;</button>
                   </div>
               `;
