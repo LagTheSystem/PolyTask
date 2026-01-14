@@ -87,6 +87,10 @@ body {
     flex-direction: column;
 }
 
+*:not(input) {
+    user-select: none;
+}
+
 /* Shared header row used on inner pages (calendar/tasks/etc) */
 .page-header {
     display: flex;

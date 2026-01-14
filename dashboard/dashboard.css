@@ -38,14 +38,6 @@
   justify-content: center;
 }
 
-.stat-box span,
-.stat-box .value,
-.stat-box h3,
-.insight-card,
-#welcome {
-  user-select: none;
-  
-}
 #quick-view,
 #quick-view h2{
   background-color: #575fa9;
