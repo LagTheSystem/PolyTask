@@ -627,6 +627,10 @@ section {
         border: none !important;
         padding: 0.5rem;
     }
+
+    footer {
+        margin-top: 1rem;
+    }
     
     /* Ensure body doesn't add scroll if card does */
     body {
