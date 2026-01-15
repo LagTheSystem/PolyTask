@@ -24,12 +24,12 @@
 <body>
 
   <main class="card calendar-large">
-    <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:1rem;">
+    <div class="dashboard-header">
       <div id="welcome">
-        <h1 id="userGreeting" style="margin:0; font-size:2rem; color:var(--dark-slate);">Hello!</h1>
+        <h1 id="userGreeting">Hello!</h1>
         <p id="dateDisplay" style="color:var(--muted); margin-top:0.25rem;">loading...</p>
       </div>
-      <div style="display:flex; gap:0.5rem; align-items:center;">
+      <div id="darkModeToggle">
         <!-- Simple Dark Mode Toggle Icon -->
         <label style="cursor:pointer; padding:0.5rem;" title="Toggle Dark Mode">
           <input type="checkbox" id="dmToggle" style="display:none">
@@ -46,126 +46,129 @@
       <p style="opacity:0.9; margin:0;" id="taskSummary">Checking your schedule...</p>
     </div>
 
-    <!-- Quick Add Task -->
-    <div style="margin-bottom:2rem; padding:0.5rem; display:flex; flex-direction:column; gap:0.25rem;">
-        <div style="display:flex; gap:0.5rem; align-items:center;">
-             <input type="text" id="quickTaskInput" placeholder="Quick add task... (e.g. 'Read docs for 30m !high #work')" 
-               style="flex:1; height:48px; border:1px solid var(--border-color); border-radius:8px; outline:none; font-size:1rem; background:var(--bg); color:var(--primary); padding:0 0.8rem; box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);">
-             <button id="quickAddBtn" class="btn primary" style="height:48px; width:48px; min-width:unset; padding:0; display:flex; align-items:center; justify-content:center; border-radius:8px;">
-                 <i class="fas fa-plus"></i>
-             </button>
+    <section class="dashboard-panels">
+      <div class="stats-panel" aria-label="Stats">
+        <div class="stats-grid">
+          <div class="stat-box sandy">
+            <h3>Pending</h3>
+            <div class="value" id="statPending">-</div>
+          </div>
+          <div class="stat-box coral">
+            <h3>Due Today</h3>
+            <div class="value" id="statToday">-</div>
+          </div>
+          <div class="stat-box mint">
+            <h3>Efficiency</h3>
+            <div class="value" id="statRate">-</div>
+          </div>
+          <div class="stat-box violet">
+            <h3>Daily Streak</h3>
+            <div class="value" id="statStreak">-</div>
+          </div>
         </div>
-        <p style="font-size:0.75rem; color:var(--muted); margin:0 0 0 0.5rem; opacity:0.8;">
-           Tip: Use <b>!high</b> for priority, <b>#tag</b> for category, <b>30m</b> for duration.
-        </p>
-    </div>
-
-    <div class="stats-grid">
-      <div class="stat-box">
-        <h3>Pending</h3>
-        <div class="value" id="statPending">-</div>
-      </div>
-      <div class="stat-box">
-        <h3>Due Today</h3>
-        <div class="value" id="statToday">-</div>
-      </div>
-      <div class="stat-box">
-        <h3>Efficiency</h3>
-        <div class="value" id="statRate">-</div>
-      </div>
-      <div class="stat-box">
-        <h3>Daily Streak</h3>
-        <div class="value" id="statStreak">-</div>
       </div>
 
-      <!-- Focus Widget integrated into grid -->
-      <div class="stat-box focus-widget" style="grid-column: span 2; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1.25rem; padding:1.5rem; text-align:center;">
-        <h3 style="margin:0; font-size:0.95rem; text-transform:uppercase; color:var(--muted); letter-spacing:1px; font-weight:600;">Focus Timer</h3>
-        
-        <div style="position:relative; width:140px; height:140px; flex-shrink:0;">
-            <svg width="140" height="140" viewBox="0 0 140 140" style="transform: rotate(-90deg); overflow:visible;">
-                <circle cx="70" cy="70" r="60" fill="none" stroke="var(--border-color)" stroke-width="8"></circle>
-                <circle id="focusRing" cx="70" cy="70" r="60" fill="none" stroke="var(--accent)" stroke-width="8" 
-                        stroke-dasharray="377" stroke-dashoffset="0" stroke-linecap="round"
-                        style="transition: stroke-dashoffset 1s linear;"></circle>
-            </svg>
-            <div style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); display:flex; align-items:center; justify-content:center;">
-                 <div id="focusDisplay" style="font-family:'Segoe UI Mono', monospace; font-size:2.2rem; font-weight:700; color:var(--primary); letter-spacing:-1px;">25:00</div>
+      <div class="side-panel" aria-label="Quick add and focus">
+        <!-- Quick Add Task -->
+        <div class="quick-add" aria-label="Quick add task">
+          <div class="quick-add_row">
+            <input type="text" id="quickTaskInput" class="quick-add_input"
+              placeholder="Quick add task (e.g. 'Read docs for 30m !high #work')">
+            <button id="quickAddBtn" class="btn primary quick-add_btn" aria-label="Add task">
+              <i class="fas fa-plus" aria-hidden="true"></i>
+            </button>
+          </div>
+          <p class="quick-add_tip">
+            Tip: Use <b>!high</b> for priority, <b>#tag</b> for category, <b>30m</b> for duration.
+          </p>
+        </div>
+
+        <!-- Focus Timer -->
+        <div class="stat-box focus-widget" aria-label="Focus timer">
+          <div class="focus-items">
+            <h3 class="focus-title">Focus Timer</h3>
+            <div class="focus-actions">
+              <button class="btn primary" onclick="PolyTask.toggleFocus()">Start</button>
+              <button class="btn-outline" onclick="PolyTask.resetFocus()">Reset</button>
             </div>
-        </div>
-        
-        <div style="display:flex; gap:0.75rem; justify-content:center; width:100%;">
-             <button class="btn primary" onclick="PolyTask.toggleFocus()" style="padding:0.5rem 1.75rem; min-width:100px; font-size:1rem;">Start</button>
-             <button class="btn-outline" onclick="PolyTask.resetFocus()" style="padding:0.5rem 1.75rem; min-width:100px; font-size:1rem;">Reset</button>
+          </div>
+          <div class="focus-ring-wrap">
+            <svg width="140" height="140" viewBox="0 0 140 140" class="focus-ring-svg">
+              <circle cx="70" cy="70" r="60" fill="none" stroke="var(--border-color)" stroke-width="8"></circle>
+              <circle id="focusRing" cx="70" cy="70" r="60" fill="none" stroke="var(--accent)" stroke-width="8"
+                stroke-dasharray="377" stroke-dashoffset="0" stroke-linecap="round"></circle>
+            </svg>
+            <div class="focus-ring-center">
+              <div id="focusDisplay" class="focus-display">25:00</div>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
+    </section>
 
     <h3 style="color:var(--muted); margin-bottom:1rem;">Quick Actions</h3>
-    <div class="action-grid">
-      <a href="../calendar/index.html" class="action-btn">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-          <line x1="16" y1="2" x2="16" y2="6" />
-          <line x1="8" y1="2" x2="8" y2="6" />
-          <line x1="3" y1="10" x2="21" y2="10" />
-        </svg>
-        Planner
-      </a>
-      <a href="../tasks/index.html" class="action-btn">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M9 11l3 3L22 4" />
-          <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
-        </svg>
-        My Tasks
-      </a>
-      <div class="action-btn" onclick="openSettings()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="12" cy="12" r="3" />
-          <path
-            d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
-        </svg>
-        Settings
+    <div class="quick-actions">
+      <div class="action-grid">
+        <a href="../calendar/index.html" class="action-btn violet">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+            <line x1="16" y1="2" x2="16" y2="6" />
+            <line x1="8" y1="2" x2="8" y2="6" />
+            <line x1="3" y1="10" x2="21" y2="10" />
+          </svg>
+          Planner
+        </a>
+        <a href="../tasks/index.html" class="action-btn mint">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 11l3 3L22 4" />
+            <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+          </svg>
+          My Tasks
+        </a>
+      </div>
+      <div class="action-grid">
+        <a href="../analytics/index.html" class="action-btn coral">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 19h16M4 12h8M4 5h12" />
+          </svg>
+          View Analytics
+        </a>
+
+        <a href="../achievements/index.html" class="action-btn sandy">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="8" r="7"></circle>
+            <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline>
+          </svg>
+          Achievements
+        </a>
+
+        <div class="action-btn cadet" onclick="openSettings()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3" />
+            <path
+              d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+          </svg>
+          Settings
+        </div>
       </div>
     </div>
-
-    <a href="../analytics/index.html" class="action-btn" style="margin-top:1.5rem; display:inline-flex; align-items:center; gap:0.5rem; text-decoration:none;">
-      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M4 19h16M4 12h8M4 5h12" />
-      </svg>
-      View Analytics
-    </a>
-
-    <a href="../achievements/index.html" class="action-btn" style="margin-top:0.75rem; display:inline-flex; align-items:center; gap:0.5rem; text-decoration:none;">
-      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
-        <circle cx="12" cy="8" r="7"></circle>
-        <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline>
-      </svg>
-      Achievements
-    </a>
   </main>
 
   <footer>
     <p>&copy; 2025 PolyTask. Made with &#10084; by Neal Sharma</p>
-    <i class="fab fa-github"></i>
   </footer>
 
   <!-- Settings Modal -->
-  <div
-    id="settingsModal"
-    class="modal"
-    role="dialog"
-    aria-modal="true"
-    aria-hidden="true"
-    aria-labelledby="settingsTitle"
-  >
+  <div id="settingsModal" class="modal" role="dialog" aria-modal="true" aria-hidden="true"
+    aria-labelledby="settingsTitle">
     <div class="modal_panel" role="document">
       <div class="modal_header">
         <div>
           <h2 id="settingsTitle" class="modal_title">Settings</h2>
           <p class="modal_subtitle">Personalize PolyTask</p>
         </div>
-        <button type="button" class="icon-btn modal_close" onclick="closeSettings()" aria-label="Close settings">×</button>
+        <button type="button" class="icon-btn modal_close" onclick="closeSettings()"
+          aria-label="Close settings">×</button>
       </div>
 
       <div class="modal_body">
@@ -187,7 +190,8 @@
         <section class="settings-section" aria-labelledby="settingsData">
           <h3 id="settingsData">Data</h3>
           <p class="settings-help" style="margin-top:-0.25rem;">Clean up tasks you’ve already finished.</p>
-          <button class="btn-outline settings-danger" type="button" onclick="handleClearCompleted()">Clear completed tasks</button>
+          <button class="btn-outline settings-danger" type="button" onclick="handleClearCompleted()">Clear completed
+            tasks</button>
         </section>
 
         <section class="settings-section" aria-labelledby="settingsAccount">
@@ -205,9 +209,9 @@
   <script>
     // XSS protection: escape HTML entities in user-controlled strings
     function escapeHtml(s) {
-        return String(s || '').replace(/[&<>"']/g, c => ({
-            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
-        }[c]));
+      return String(s || '').replace(/[&<>"']/g, c => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+      }[c]));
     }
 
     const MESSAGES = [
@@ -279,7 +283,7 @@
         const h = new Date().getHours();
         const timeGreet = h < 12 ? 'Good Morning' : h < 18 ? 'Good Afternoon' : 'Good Evening';
         const name = escapeHtml(user.name) || 'Friend';
-        document.getElementById('userGreeting').innerHTML = `${timeGreet}, <span style="color:var(--accent);">${name}</span>`;
+        document.getElementById('userGreeting').innerHTML = `${timeGreet},<br> <span style="color:var(--accent);">${name}</span>`;
 
         // Date display
         const dateOpts = { weekday: 'long', month: 'long', day: 'numeric' };
@@ -308,7 +312,7 @@
 
         // Analytics: weekly window (Mon-Sun based on local)
         const weekStart = new Date();
-        weekStart.setHours(0,0,0,0);
+        weekStart.setHours(0, 0, 0, 0);
         weekStart.setDate(weekStart.getDate() - weekStart.getDay()); // Sunday=0
         const weekEnd = new Date(weekStart); weekEnd.setDate(weekStart.getDate() + 7);
 
@@ -348,9 +352,9 @@
         const driftMinutes = doneMinutesWeek - totalMinutesWeek; // positive = ahead, negative = behind
 
         // Completions last 7 days (today + previous 6)
-        const dayLabels = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-        const today = new Date(); today.setHours(0,0,0,0);
-        const days = Array.from({length: 7}, (_,i) => {
+        const dayLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        const today = new Date(); today.setHours(0, 0, 0, 0);
+        const days = Array.from({ length: 7 }, (_, i) => {
           const d = new Date(today); d.setDate(today.getDate() - (6 - i)); return d;
         });
         const dayCounts = days.map(d => {
@@ -378,7 +382,7 @@
         const fmtDrift = (mins) => {
           const sign = mins === 0 ? '' : (mins > 0 ? '+' : '–');
           const dir = mins > 0 ? 'ahead' : (mins < 0 ? 'behind' : 'on plan');
-          return mins === 0 ? 'Drift — on plan' : `Drift — ${sign}${Math.abs(mins/60).toFixed(1)}h ${dir}`;
+          return mins === 0 ? 'Drift — on plan' : `Drift — ${sign}${Math.abs(mins / 60).toFixed(1)}h ${dir}`;
         };
         setText('anDrift', fmtDrift(driftMinutes));
         const bar = document.getElementById('anPlannedBar');
@@ -435,7 +439,7 @@
             return path.join(' ');
           };
           const linePath = toPath(points);
-          const areaPath = `${linePath} L${points[points.length-1].x},${baseY} L${points[0].x},${baseY} Z`;
+          const areaPath = `${linePath} L${points[points.length - 1].x},${baseY} L${points[0].x},${baseY} Z`;
 
           const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
           svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
@@ -487,10 +491,10 @@
               tipText.textContent = `${p.count}`;
               const bbox = tipText.getBBox();
               const padding = 6;
-              tipBg.setAttribute('x', p.x - bbox.width/2 - padding);
+              tipBg.setAttribute('x', p.x - bbox.width / 2 - padding);
               tipBg.setAttribute('y', p.y - bbox.height - 16);
-              tipBg.setAttribute('width', bbox.width + padding*2);
-              tipBg.setAttribute('height', bbox.height + padding*2);
+              tipBg.setAttribute('width', bbox.width + padding * 2);
+              tipBg.setAttribute('height', bbox.height + padding * 2);
               tipBg.setAttribute('transform', `translate(0, ${-4})`);
               tipText.setAttribute('x', p.x);
               tipText.setAttribute('y', p.y - bbox.height - 6);
@@ -503,7 +507,7 @@
           dayCounts.forEach((_, idx) => {
             const d = days[idx];
             const lab = document.createElement('div');
-            lab.textContent = `${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')}`;
+            lab.textContent = `${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getDate()).padStart(2, '0')}`;
             labelsRow.appendChild(lab);
           });
 
@@ -511,7 +515,7 @@
           chart.appendChild(labelsRow);
 
           const todayCount = dayCounts[6];
-          const prevAvg = dayCounts.slice(0,6).reduce((a,b)=>a+b,0) / 6 || 0;
+          const prevAvg = dayCounts.slice(0, 6).reduce((a, b) => a + b, 0) / 6 || 0;
           setText('anCompletionTrend', `Today ${todayCount} vs avg ${prevAvg.toFixed(1)} (prev 6 days)`);
         }
 
@@ -526,7 +530,7 @@
           const streak = PolyTask.calculateStreak(tasks);
           const fire = streak > 0 ? ' 🔥' : '';
           document.getElementById('statStreak').textContent = streak + fire;
-          
+
           // Update streak for achievements
           if (typeof PolyTask.updateStreak === 'function') {
             PolyTask.updateStreak(streak);

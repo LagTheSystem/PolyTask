@@ -2,24 +2,17 @@
   padding: 1.5rem;
 }
 
-.analytics-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  margin-bottom: 1.25rem;
-}
-
-.analytics-header .btn-outline {
-  padding: 0.5rem 1rem;
-}
-
 .analytics-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   gap: 1.25rem;
   width: 100%;
   align-items: stretch;
+  margin-top: 1.5rem;
+}
+
+h1 {
+  color: var(--coral)
 }
 
 .analytics-card {
@@ -42,7 +35,7 @@
 .analytics-card:nth-child(2) { border-top: 4px solid var(--coral); }
 .analytics-card:nth-child(3) { border-top: 4px solid var(--mint); }
 .analytics-card:nth-child(4) { border-top: 4px solid var(--violet); }
-.analytics-card:nth-child(5) { border-top: 4px solid var(--dark-cyan); }
+.analytics-card:nth-child(5) { border-top: 4px solid var(--cornflower); }
 .analytics-card:nth-child(6) { border-top: 4px solid var(--rose); }
 .analytics-card:nth-child(7) { border-top: 4px solid var(--maize); }
 .analytics-card:nth-child(8) { border-top: 4px solid var(--celadon); }
@@ -52,7 +45,7 @@
 .analytics-card:nth-child(2) .analytics-value { color: var(--coral); }
 .analytics-card:nth-child(3) .analytics-value { color: var(--mint); }
 .analytics-card:nth-child(4) .analytics-value { color: var(--violet); }
-.analytics-card:nth-child(5) .analytics-value { color: var(--dark-cyan); }
+.analytics-card:nth-child(5) .analytics-value { color: var(--cornflower); }
 .analytics-card:nth-child(6) .analytics-value { color: var(--rose); }
 .analytics-card:nth-child(7) .analytics-value { color: var(--maize); }
 .analytics-card:nth-child(8) .analytics-value { color: var(--celadon); }

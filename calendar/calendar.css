@@ -326,21 +326,6 @@ body.dark #editColor::-moz-color-swatch {
 }
 
 @media (max-width: 640px) {
-    /* Navigation row: stack buttons */
-    .nav-row {
-        flex-direction: column;
-        gap: 0.5rem;
-        align-items: stretch;
-    }
-
-    .nav-row button,
-    .nav-row .nav-day-btn {
-        width: 100%;
-        margin-left: 0 !important;
-        margin-right: 0 !important;
-        justify-content: center;
-    }
-
     /* Date display centered */
     #currentDateDisplay {
         text-align: center;

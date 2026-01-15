@@ -8,6 +8,7 @@
     --celadon: #ACDD91; /* Celadon Green (success) */
     --mint: #59C9A5;    /* Mint (accent) */
     --dark-cyan: #50908D; /* Info */
+    --cornflower: #4A90E2; /* Cornflower Blue */
     --violet: #715D73;   /* Violet accent */
     --rose: #9B6371;     /* Rose taupe */
     --cadet: #6C7A89;    /* Muted (darkened for a11y) */
@@ -85,6 +86,10 @@ body {
     min-height: 100vh;
     display: flex;
     flex-direction: column;
+}
+
+*:not(input) {
+    user-select: none;
 }
 
 /* Shared header row used on inner pages (calendar/tasks/etc) */
@@ -621,6 +626,10 @@ section {
         box-shadow: none !important;
         border: none !important;
         padding: 0.5rem;
+    }
+
+    footer {
+        margin-top: 1rem;
     }
     
     /* Ensure body doesn't add scroll if card does */

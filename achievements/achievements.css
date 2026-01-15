@@ -1,9 +1,7 @@
 /* Achievements Page Styles */
 
-.achievements-container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 2rem;
+h1 {
+  color: var(--sandy);
 }
 
 /* XP Card */
@@ -256,10 +254,6 @@ body.dark .achievement-card.unlocked {
 
 /* Responsive */
 @media (max-width: 768px) {
-  .achievements-container {
-    padding: 1rem;
-  }
-  
   .xp-card {
     padding: 2rem;
   }
