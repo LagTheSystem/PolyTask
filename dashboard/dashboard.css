@@ -50,45 +50,89 @@ h1 {
 .quick-add {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: 0.45rem;
+  background: var(--bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  padding: 0.9rem;
+  box-sizing: border-box;
 }
 
 .quick-add_row {
   display: flex;
-  gap: 0.5rem;
   align-items: center;
+  gap: 0;
+  height: 48px;
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  background: var(--card-bg);
+  overflow: hidden;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
+  transition: box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+.quick-add_row:focus-within {
+  border-color: color-mix(in srgb, var(--info) 70%, var(--border-color) 30%);
+  box-shadow: 0 8px 22px rgba(16, 24, 40, 0.08);
 }
 
 .quick-add_input {
   flex: 1;
-  height: 48px;
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
+  min-width: 0;
+  height: 100%;
+  border: none;
+  border-radius: 0;
   outline: none;
   font-size: 1rem;
-  background: var(--bg);
+  background: transparent;
   color: var(--primary);
-  padding: 0 0.8rem;
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
+  padding: 0 0.95rem;
+  box-shadow: none;
   box-sizing: border-box;
 }
 
+.quick-add_input::placeholder {
+  color: color-mix(in srgb, var(--muted) 75%, transparent 25%);
+}
+
+.quick-add_input:focus-visible {
+  outline: none;
+}
+
 .quick-add_btn {
-  height: 48px;
+  height: 100%;
   width: 48px;
   min-width: unset;
   padding: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 8px;
+  border-radius: 0;
+  border-left: 1px solid var(--border-color);
+  box-shadow: none;
+}
+
+.quick-add_btn:hover {
+  transform: none;
+  box-shadow: none;
+  filter: brightness(0.98);
+}
+
+.quick-add_btn:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--primary) 18%, transparent 82%);
+  outline-offset: -2px;
 }
 
 .quick-add_tip {
-  font-size: 0.75rem;
+  font-size: 0.78rem;
   color: var(--muted);
-  margin: 0 0 0 0.5rem;
-  opacity: 0.8;
+  margin: 0.1rem 0 0 0.25rem;
+  opacity: 0.85;
+  line-height: 1.35;
+}
+
+.quick-add_tip b {
+  color: var(--primary);
 }
 
 .focus-title {
@@ -421,6 +465,20 @@ h1 {
 }
 
 @media (max-width: 600px) {
+  .quick-add {
+    padding: 0.75rem;
+    border-radius: 12px;
+  }
+
+  .quick-add_row {
+    border-radius: 10px;
+  }
+
+  .quick-add_input {
+    font-size: 0.95rem;
+    padding: 0 0.75rem;
+  }
+
   .focus-widget {
     flex-direction: column;
     gap: 0.5rem;
