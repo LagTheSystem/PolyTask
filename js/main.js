@@ -5,7 +5,7 @@ import { loadAndRender, adjustCurrentDay, getCurrentDay, setCurrentDay, setViewM
 import { initTaskModal, initScheduleModal, initEditModal } from './modals.js';
 import { initTimer } from './timer.js';
 import { showToast, formatDateISO, fireConfetti } from './ui.js';
-import { categorizeTasks, autoSchedule, listUserTasks, createUserTask, updateUserTask, deleteUserTask, calculateStreak, clearCompletedTasks } from './tasks.js';
+import { categorizeTasks, autoSchedule, autoRescheduleOverdueTasks, listUserTasks, createUserTask, updateUserTask, deleteUserTask, calculateStreak, clearCompletedTasks } from './tasks.js';
 import { parseSmartInput } from './parser.js';
 import { updateStreak, syncAchievementsFromLocal, loadAchievementsFromServer, loadStatsFromServer } from './achievement-tracker.js';
 
@@ -182,6 +182,12 @@ const reminderState = { timer: null, notified: new Set() };
 function startSmartReminders() {
     if (reminderState.timer) return;
     const poll = async () => {
+        try {
+            await autoRescheduleOverdueTasks(new Date());
+        } catch (e) {
+            console.warn('Auto-reschedule warning:', e);
+        }
+
         let tasks = [];
         try { tasks = await listUserTasks(); } catch (e) { return; }
         const now = new Date();
@@ -287,6 +293,10 @@ async function runApp() {
             // Background tasks
             setTimeout(async () => {
                 try {
+                    const rescheduled = await autoRescheduleOverdueTasks(new Date());
+                    if (rescheduled > 0) {
+                        showToast(`${rescheduled} overdue task${rescheduled === 1 ? '' : 's'} rescheduled`, 'info');
+                    }
                     await categorizeTasks();
                     await autoSchedule(getCurrentDay());
                     if (document.getElementById('calendar')) loadAndRender(); 
@@ -327,6 +337,7 @@ window.PolyTask = {
     fireConfetti: fireConfetti,
     calculateStreak: calculateStreak,
     clearCompletedTasks: clearCompletedTasks,
+    autoRescheduleOverdueTasks: autoRescheduleOverdueTasks,
     updateStreak: updateStreak,
     loadAchievementsFromServer: loadAchievementsFromServer,
     loadStatsFromServer: loadStatsFromServer,

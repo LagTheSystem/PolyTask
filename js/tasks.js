@@ -115,27 +115,114 @@ export async function updateUserTask(documentId, patch) {
     const client = await ensureAppwriteClient();
     const App = getAppwriteModule();
     const db = new App.Databases(client);
+    const isCompletingTask = patch.complete === true;
+    let previousTaskData = null;
+
+    if (isCompletingTask) {
+        try {
+            const before = await invokeWithCompat(db, 'getDocument', [APPWRITE_DATABASE, APPWRITE_COLLECTION_TASKS, documentId], {
+                databaseId: APPWRITE_DATABASE,
+                collectionId: APPWRITE_COLLECTION_TASKS,
+                documentId: documentId
+            });
+            previousTaskData = before.called ? before.value : await db.getDocument(APPWRITE_DATABASE, APPWRITE_COLLECTION_TASKS, documentId);
+        } catch (e) {
+            console.warn('Could not load task before completion update:', e);
+        }
+    }
+
     const upd = await invokeWithCompat(db, 'updateDocument', [APPWRITE_DATABASE, APPWRITE_COLLECTION_TASKS, documentId, patch], {
         databaseId: APPWRITE_DATABASE,
         collectionId: APPWRITE_COLLECTION_TASKS,
         documentId: documentId,
         data: patch
     });
+    const updatedTask = upd.called ? upd.value : await db.updateDocument(APPWRITE_DATABASE, APPWRITE_COLLECTION_TASKS, documentId, patch);
     
     // Track achievement if task is being completed
-    if (patch.complete === true) {
-        // Get the task data to pass to tracker
-        const task = await invokeWithCompat(db, 'getDocument', [APPWRITE_DATABASE, APPWRITE_COLLECTION_TASKS, documentId], {
-            databaseId: APPWRITE_DATABASE,
-            collectionId: APPWRITE_COLLECTION_TASKS,
-            documentId: documentId
-        });
-        const taskData = task.called ? task.value : await db.getDocument(APPWRITE_DATABASE, APPWRITE_COLLECTION_TASKS, documentId);
-        trackTaskCompletion(taskData);
+    if (isCompletingTask) {
+        trackTaskCompletion(updatedTask);
+
+        if (previousTaskData && previousTaskData.complete !== true) {
+            try {
+                await bumpFollowingTasksAfterEarlyCompletion(previousTaskData, new Date());
+            } catch (e) {
+                console.warn('Failed to bump following tasks after early completion:', e);
+            }
+        }
     }
     
-    if (upd.called) return upd.value;
-    return await db.updateDocument(APPWRITE_DATABASE, APPWRITE_COLLECTION_TASKS, documentId, patch);
+    return updatedTask;
+}
+
+async function bumpFollowingTasksAfterEarlyCompletion(completedTask, completionTime = new Date()) {
+    if (!completedTask || !completedTask.assigned) return 0;
+
+    const completedId = completedTask.$id || completedTask.id;
+    const scheduledStart = new Date(completedTask.assigned);
+    if (isNaN(scheduledStart)) return 0;
+
+    const scheduledDuration = typeof completedTask.estimated_time === 'number'
+        ? completedTask.estimated_time
+        : (typeof completedTask.estimateMinutes === 'number' ? completedTask.estimateMinutes : 60);
+
+    const safeDuration = Math.max(1, scheduledDuration);
+    const scheduledEnd = new Date(scheduledStart.getTime() + safeDuration * 60000);
+    if (!(completionTime instanceof Date) || isNaN(completionTime)) return 0;
+    if (completionTime >= scheduledEnd) return 0;
+
+    const allTasks = await listUserTasks();
+
+    const followingTasks = allTasks
+        .filter(task => {
+            if (!task || task.complete || !task.assigned) return false;
+            const taskId = task.$id || task.id;
+            if (taskId === completedId) return false;
+            const taskStart = new Date(task.assigned);
+            if (isNaN(taskStart)) return false;
+            return taskStart > completionTime;
+        })
+        .sort((a, b) => new Date(a.assigned) - new Date(b.assigned));
+
+    if (!followingTasks.length) return 0;
+
+    let availableShiftMs = scheduledEnd.getTime() - completionTime.getTime();
+    if (availableShiftMs <= 0) return 0;
+
+    let previousTaskEnd = new Date(completionTime);
+    let shiftedCount = 0;
+
+    for (const task of followingTasks) {
+        if (availableShiftMs <= 0) break;
+
+        const taskStart = new Date(task.assigned);
+        if (isNaN(taskStart)) continue;
+
+        const taskDuration = typeof task.estimated_time === 'number'
+            ? task.estimated_time
+            : (typeof task.estimateMinutes === 'number' ? task.estimateMinutes : 60);
+        const safeTaskDuration = Math.max(1, taskDuration);
+
+        const desiredStart = new Date(taskStart.getTime() - availableShiftMs);
+        const minAllowedStartMs = Math.max(previousTaskEnd.getTime(), completionTime.getTime());
+        const newStart = new Date(Math.max(desiredStart.getTime(), minAllowedStartMs));
+
+        if (newStart < taskStart) {
+            const shiftedByMs = taskStart.getTime() - newStart.getTime();
+            await updateUserTask(task.$id || task.id, { assigned: newStart.toISOString() });
+            availableShiftMs -= shiftedByMs;
+            shiftedCount++;
+            previousTaskEnd = new Date(newStart.getTime() + safeTaskDuration * 60000);
+        } else {
+            previousTaskEnd = new Date(taskStart.getTime() + safeTaskDuration * 60000);
+        }
+    }
+
+    if (shiftedCount > 0) {
+        showToast(`Bumped ${shiftedCount} later task${shiftedCount === 1 ? '' : 's'} earlier`, 'info');
+    }
+
+    return shiftedCount;
 }
 
 export async function deleteUserTask(documentId) {
@@ -426,6 +513,7 @@ export async function autoSchedule(currentDay) {
     try {
         const userId = await getCurrentUserId();
         if (!userId) return 0;
+        const nowTs = Date.now();
 
         // 1. Get all tasks
         const allTasks = await listUserTasks();
@@ -441,12 +529,13 @@ export async function autoSchedule(currentDay) {
             return d >= startOfCurrentDay && d <= endOfCurrentDay;
         });
 
-        // Floating candidates: unassigned, due today OR in the future, not completed
+        // Floating candidates: unassigned, has due date, not completed
+        // (includes overdue tasks so they can be prioritized first)
         const candidates = allTasks.filter(t => {
             if (t.assigned || t.complete) return false;
             if (!t.due) return false;
-            const dueStr = new Date(t.due).toISOString().slice(0,10);
-            return dueStr >= currentDayStr;
+            const dueTime = new Date(t.due).getTime();
+            return Number.isFinite(dueTime);
         });
 
         if (candidates.length === 0) {
@@ -459,7 +548,16 @@ export async function autoSchedule(currentDay) {
         const priorityWeight = p => (p === 'high' ? 3 : p === 'low' ? 1 : 2);
 
         candidates.sort((a, b) => {
-            // 1. Due Today always first!
+            // 1. Overdue first
+            const dueTsA = new Date(a.due).getTime();
+            const dueTsB = new Date(b.due).getTime();
+            const isOverdueA = dueTsA < nowTs;
+            const isOverdueB = dueTsB < nowTs;
+
+            if (isOverdueA && !isOverdueB) return -1;
+            if (!isOverdueA && isOverdueB) return 1;
+
+            // 2. Due Today next
             const dateA = new Date(a.due).toISOString().slice(0,10);
             const dateB = new Date(b.due).toISOString().slice(0,10);
             const isTodayA = (dateA === currentDayStr);
@@ -468,17 +566,17 @@ export async function autoSchedule(currentDay) {
             if (isTodayA && !isTodayB) return -1;
             if (!isTodayA && isTodayB) return 1;
 
-            // 2. Priority Descending (High first)
+            // 3. Priority Descending (High first)
             const pA = priorityWeight(a.priority);
             const pB = priorityWeight(b.priority);
             if (pA !== pB) return pB - pA;
 
-            // 3. Due Date Ascending (Earliest first)
+            // 4. Due Date Ascending (Earliest first)
             const dueA = new Date(a.due).getTime();
             const dueB = new Date(b.due).getTime();
             if (dueA !== dueB) return dueA - dueB;
             
-            // 4. Duration Descending (Big blocks first)
+            // 5. Duration Descending (Big blocks first)
             const estA = typeof a.estimated_time === 'number' ? a.estimated_time : (typeof a.estimateMinutes === 'number' ? a.estimateMinutes : 60);
             const estB = typeof b.estimated_time === 'number' ? b.estimated_time : (typeof b.estimateMinutes === 'number' ? b.estimateMinutes : 60);
             return estB - estA;
@@ -546,6 +644,121 @@ export async function autoSchedule(currentDay) {
         console.error('Auto-schedule error', err);
         throw err;
     }
+}
+
+// Auto-reschedule tasks that are incomplete for 60+ minutes past scheduled end.
+// Scheduled end is derived from: assigned + estimated_time (minutes).
+// Returns number of tasks rescheduled.
+export async function autoRescheduleOverdueTasks(referenceTime = new Date()) {
+    const tasks = await listUserTasks();
+    if (!tasks.length) return 0;
+
+    const now = referenceTime instanceof Date ? referenceTime : new Date(referenceTime);
+    if (isNaN(now)) return 0;
+
+    const RESCHEDULE_THRESHOLD_MS = 60 * 60 * 1000;
+    const RESCHEDULE_OFFSET_MINUTES = 15;
+    const ROUND_TO_MINUTES = 15;
+    const SEARCH_HORIZON_DAYS = 30;
+
+    const ceilToStep = (date, stepMinutes) => {
+        const copy = new Date(date);
+        copy.setSeconds(0, 0);
+        const mins = copy.getMinutes();
+        const mod = mins % stepMinutes;
+        if (mod !== 0) copy.setMinutes(mins + (stepMinutes - mod));
+        return copy;
+    };
+
+    const overdueTasks = tasks.filter(task => {
+        if (task.complete || !task.assigned) return false;
+        const assigned = new Date(task.assigned);
+        if (isNaN(assigned)) return false;
+
+        const durationMinutes = typeof task.estimated_time === 'number'
+            ? task.estimated_time
+            : (typeof task.estimateMinutes === 'number' ? task.estimateMinutes : 60);
+
+        const scheduledEnd = new Date(assigned.getTime() + Math.max(1, durationMinutes) * 60000);
+        const overdueBy = now.getTime() - scheduledEnd.getTime();
+        return overdueBy >= RESCHEDULE_THRESHOLD_MS;
+    });
+
+    if (!overdueTasks.length) return 0;
+
+    const overdueIds = new Set(overdueTasks.map(task => task.$id || task.id));
+
+    const occupied = tasks
+        .filter(task => task.assigned && !overdueIds.has(task.$id || task.id))
+        .map(task => {
+            const start = new Date(task.assigned);
+            if (isNaN(start)) return null;
+            const durationMinutes = typeof task.estimated_time === 'number'
+                ? task.estimated_time
+                : (typeof task.estimateMinutes === 'number' ? task.estimateMinutes : 60);
+            const safeDuration = Math.max(1, durationMinutes);
+            const end = new Date(start.getTime() + safeDuration * 60000);
+            return { start, end };
+        })
+        .filter(Boolean)
+        .sort((a, b) => a.start - b.start);
+
+    const overlapsExisting = (start, end) => {
+        for (const interval of occupied) {
+            if (start < interval.end && end > interval.start) return true;
+        }
+        return false;
+    };
+
+    const findNextFreeSlot = (startAfter, durationMinutes) => {
+        const safeDuration = Math.max(1, durationMinutes);
+        const stepMs = ROUND_TO_MINUTES * 60000;
+        const horizonMs = SEARCH_HORIZON_DAYS * 24 * 60 * 60000;
+        const searchStart = ceilToStep(startAfter, ROUND_TO_MINUTES).getTime();
+        const searchEnd = searchStart + horizonMs;
+
+        for (let cursorMs = searchStart; cursorMs <= searchEnd; cursorMs += stepMs) {
+            const candidateStart = new Date(cursorMs);
+            const candidateEnd = new Date(cursorMs + safeDuration * 60000);
+            if (!overlapsExisting(candidateStart, candidateEnd)) {
+                return { start: candidateStart, end: candidateEnd };
+            }
+        }
+
+        return null;
+    };
+
+    // Reschedule oldest overdue tasks first.
+    overdueTasks.sort((a, b) => {
+        const aAssigned = new Date(a.assigned).getTime();
+        const bAssigned = new Date(b.assigned).getTime();
+        return aAssigned - bAssigned;
+    });
+
+    let rescheduledCount = 0;
+    for (const task of overdueTasks) {
+        const durationMinutes = typeof task.estimated_time === 'number'
+            ? task.estimated_time
+            : (typeof task.estimateMinutes === 'number' ? task.estimateMinutes : 60);
+
+        const rescheduleBase = new Date(now.getTime() + RESCHEDULE_OFFSET_MINUTES * 60000);
+        const freeSlot = findNextFreeSlot(rescheduleBase, durationMinutes);
+        if (!freeSlot) continue;
+
+        const patch = { assigned: freeSlot.start.toISOString() };
+        const nextDueDate = freeSlot.start.toISOString().slice(0, 10);
+
+        if (!task.due || String(task.due) < nextDueDate) {
+            patch.due = nextDueDate;
+        }
+
+        await updateUserTask(task.$id || task.id, patch);
+        occupied.push({ start: freeSlot.start, end: freeSlot.end });
+        occupied.sort((a, b) => a.start - b.start);
+        rescheduledCount++;
+    }
+
+    return rescheduledCount;
 }
 
 export function calculateStreak(tasks) {
