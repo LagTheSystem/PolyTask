@@ -29,7 +29,7 @@
         <h1 id="userGreeting">Hello!</h1>
         <p id="dateDisplay" style="color:var(--muted); margin-top:0.25rem;">loading...</p>
       </div>
-      <div id="darkModeToggle">
+      <div id="darkModeBtn">
         <!-- Simple Dark Mode Toggle Icon -->
         <label style="cursor:pointer; padding:0.5rem;" title="Toggle Dark Mode">
           <input type="checkbox" id="dmToggle" style="display:none">
@@ -245,40 +245,6 @@
       const modal = document.getElementById('settingsModal');
       modal.classList.add('is-open');
       modal.setAttribute('aria-hidden', 'false');
-      
-      // Sync and set up dark mode toggle
-      const toggle = document.getElementById('darkModeToggle');
-      if (toggle) {
-        const isDark = document.documentElement.classList.contains('dark') || 
-                       document.body.classList.contains('dark');
-        toggle.checked = isDark;
-        
-        // Ensure change listener is attached (remove old ones first to prevent duplicates)
-        const newToggle = toggle.cloneNode(true);
-        toggle.parentNode.replaceChild(newToggle, toggle);
-        
-        // Attach fresh listener
-        newToggle.addEventListener('change', function() {
-          const root = document.documentElement;
-          const body = document.body;
-          
-          // Toggle the dark class
-          root.classList.toggle('dark');
-          if (body) body.classList.toggle('dark', root.classList.contains('dark'));
-          
-          // Update theme in localStorage
-          const newTheme = root.classList.contains('dark') ? 'dark' : 'light';
-          localStorage.setItem('theme', newTheme);
-          root.style.colorScheme = newTheme;
-          
-          // Sync all other toggles
-          document.querySelectorAll('[id$="Toggle"], .dm-toggle').forEach(el => {
-            if (el.type === 'checkbox' && el !== newToggle) {
-              el.checked = root.classList.contains('dark');
-            }
-          });
-        });
-      }
     }
 
     function closeSettings() {
