@@ -204,10 +204,10 @@ function startSmartReminders() {
                 if (reminderState.notified.has(id)) return;
                 reminderState.notified.add(id);
                 const timeStr = start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                showToast(`Starts soon: ${t.name || 'Task'} @ ${timeStr}`, 'info', {
+                showToast(`${t.name || 'Task'} @ ${timeStr}`, 'info', {
                     label: 'Open planner',
                     onClick: () => { window.location.href = '../calendar/index.html'; }
-                });
+                }, 'Starts soon');
             }
         });
     };

@@ -19,7 +19,7 @@ export function fireConfetti() {
     }
 }
 
-export function showToast(message, type = 'info', action = null) {
+export function showToast(message, type = 'info', action = null, title = null) {
     let container = document.getElementById('toast-container');
     if (!container) {
         container = document.createElement('div');
@@ -29,27 +29,25 @@ export function showToast(message, type = 'info', action = null) {
     const toast = document.createElement('div');
     toast.className = `toast ${type}`;
     
+    if (title) {
+        const titleText = document.createElement('span');
+        titleText.classList.add('toast-title');
+        titleText.textContent = title;
+        toast.appendChild(titleText);
+    }
+
     const text = document.createElement('span');
+    text.classList.add('toast-message');
     text.textContent = message;
     toast.appendChild(text);
 
     if (action && action.label && typeof action.onClick === 'function') {
-        const btn = document.createElement('button');
-        btn.textContent = action.label;
-        btn.style.marginLeft = '12px';
-        btn.style.padding = '4px 8px';
-        btn.style.border = '1px solid currentColor';
-        btn.style.borderRadius = '4px';
-        btn.style.background = 'transparent';
-        btn.style.color = 'inherit';
-        btn.style.cursor = 'pointer';
-        btn.style.fontSize = '0.8rem';
-        btn.addEventListener('click', (e) => {
+        toast.style.cursor = 'pointer';
+        toast.addEventListener('click', (e) => {
             e.stopPropagation();
             action.onClick();
             toast.remove();
         });
-        toast.appendChild(btn);
     }
 
     container.appendChild(toast);
