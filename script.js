@@ -2166,11 +2166,20 @@ document.addEventListener('DOMContentLoaded', () => {
 				}
 			}
 
-			window.addEventListener('scroll', updatePosition, { passive: true });
-			window.addEventListener('resize', updatePosition);
+			let rafId = null;
+			function scheduleUpdatePosition() {
+				if (rafId !== null) return;
+				rafId = requestAnimationFrame(() => {
+					rafId = null;
+					updatePosition();
+				});
+			}
+
+			window.addEventListener('scroll', scheduleUpdatePosition, { passive: true });
+			window.addEventListener('resize', scheduleUpdatePosition);
 			// Also watch for content changes (like calendar loading)
 			if (window.ResizeObserver) {
-				const ro = new ResizeObserver(updatePosition);
+				const ro = new ResizeObserver(scheduleUpdatePosition);
 				ro.observe(document.body);
 			}
 			// Check initially

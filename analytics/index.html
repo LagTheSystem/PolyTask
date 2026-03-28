@@ -16,7 +16,7 @@
   <link rel="stylesheet" href="../dashboard/dashboard.css">
   <link rel="stylesheet" href="./analytics.css">
   <script>window.APPWRITE_ENDPOINT = 'https://nyc.cloud.appwrite.io/v1';</script>
-  <script src="https://cdn.jsdelivr.net/npm/appwrite@21.4.0"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/appwrite@21.4.0"></script>
   <script type="module" src="../js/main.js"></script>
 </head>
 <body>
@@ -63,11 +63,16 @@
   </main>
 
   <script>
+    function waitForPolyTask() {
+      if (window.PolyTask) return Promise.resolve(window.PolyTask);
+      return new Promise(resolve => {
+        window.addEventListener('polytask:ready', () => resolve(window.PolyTask), { once: true });
+      });
+    }
+
     document.addEventListener('DOMContentLoaded', async () => {
       // wait for PolyTask API
-      if (!window.PolyTask) await new Promise(r => {
-        const i = setInterval(() => { if (window.PolyTask) { clearInterval(i); r(); } }, 40);
-      });
+      await waitForPolyTask();
       const tasks = await PolyTask.listUserTasks();
 
       const setText = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };

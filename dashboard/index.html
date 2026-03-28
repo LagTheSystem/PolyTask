@@ -17,7 +17,7 @@
   <link rel="stylesheet" href="./dashboard.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script>window.APPWRITE_ENDPOINT = 'https://nyc.cloud.appwrite.io/v1';</script>
-  <script src="https://cdn.jsdelivr.net/npm/appwrite@21.4.0"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/appwrite@21.4.0"></script>
   <script type="module" src="../js/main.js"></script>
 </head>
 
@@ -265,13 +265,17 @@
       if (modal?.classList.contains('is-open')) closeSettings();
     });
 
+    function waitForPolyTask() {
+      if (window.PolyTask) return Promise.resolve(window.PolyTask);
+      return new Promise(resolve => {
+        window.addEventListener('polytask:ready', () => resolve(window.PolyTask), { once: true });
+      });
+    }
+
     document.addEventListener('DOMContentLoaded', async () => {
       // Init PolyTask
       try {
-        // Poll for module load
-        if (!window.PolyTask) await new Promise(r => {
-          const i = setInterval(() => { if (window.PolyTask) { clearInterval(i); r(); } }, 50);
-        });
+        await waitForPolyTask();
 
         const user = await PolyTask.getCurrentUser();
         if (!user) {

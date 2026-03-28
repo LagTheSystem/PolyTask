@@ -14,7 +14,7 @@
   <link rel="stylesheet" href="../styles.css">
   <link rel="stylesheet" href="./tasks.css">
   <script>window.APPWRITE_ENDPOINT = 'https://nyc.cloud.appwrite.io/v1';</script>
-  <script src="https://cdn.jsdelivr.net/npm/appwrite@21.4.0"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/appwrite@21.4.0"></script>
   <script type="module" src="../js/main.js"></script>
 </head>
 <body>
@@ -522,13 +522,16 @@
           setTimeout(() => div.remove(), 2000);
       }
 
+      function waitForPolyTask() {
+          if (window.PolyTask) return Promise.resolve(window.PolyTask);
+          return new Promise(resolve => {
+              window.addEventListener('polytask:ready', () => resolve(window.PolyTask), { once: true });
+          });
+      }
+
       document.addEventListener('DOMContentLoaded', async () => {
           // Wait for PolyTask to be available
-          if (!window.PolyTask) {
-             await new Promise(r => {
-                const i = setInterval(() => { if(window.PolyTask){clearInterval(i); r();} }, 50);
-             });
-          }
+          await waitForPolyTask();
           
           // Load Tasks once
           await refreshTasks();

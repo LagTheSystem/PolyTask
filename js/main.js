@@ -399,6 +399,8 @@ window.PolyTask = {
     }
 };
 
+window.dispatchEvent(new Event('polytask:ready'));
+
 window.toggleDarkMode = () => {
     const btn = document.getElementById('toggleThemeBtn');
     if (btn) {
