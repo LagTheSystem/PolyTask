@@ -1,0 +1,11 @@
+User-agent: *
+Disallow: /login/
+Disallow: /signup/
+Disallow: /dashboard/
+Disallow: /tasks/
+Disallow: /analytics/
+Disallow: /achievements/
+Disallow: /calendar/
+Disallow: /home/
+
+Sitemap: https://polytask.appwrite.network/sitemap.xml
