@@ -72,6 +72,13 @@ export function showFormError(form, msg) {
 
 export function escapeHtml(s) { return String(s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"}[c])); }
 
+export function sanitizeColor(color) {
+    if (!color) return null;
+    const value = String(color).trim();
+    const safe = /^(#[0-9a-fA-F]{3,8}|[a-zA-Z]+|rgba?\([^)]+\)|hsla?\([^)]+\)|var\(--[a-zA-Z0-9-]+\))$/;
+    return safe.test(value) ? value : null;
+}
+
 export function startOfDay(date) { const d = new Date(date); d.setHours(0,0,0,0); return d; }
 export function formatDateISO(d) { return d.toISOString().slice(0,10); }
 export function friendlyDayLabel(d) { return d.toLocaleDateString(undefined, { weekday:'long', month:'short', day:'numeric' }); }

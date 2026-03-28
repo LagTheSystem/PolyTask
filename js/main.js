@@ -4,7 +4,7 @@ import { ensureSchema } from './appwrite.js';
 import { loadAndRender, adjustCurrentDay, getCurrentDay, setCurrentDay, setViewMode, setModalHandlers } from './calendar.js';
 import { initTaskModal, initScheduleModal, initEditModal } from './modals.js';
 import { initTimer } from './timer.js';
-import { showToast, formatDateISO, fireConfetti } from './ui.js';
+import { showToast, formatDateISO, fireConfetti, escapeHtml, sanitizeColor } from './ui.js';
 import { categorizeTasks, autoSchedule, autoRescheduleOverdueTasks, listUserTasks, createUserTask, updateUserTask, deleteUserTask, calculateStreak, clearCompletedTasks } from './tasks.js';
 import { parseSmartInput } from './parser.js';
 import { updateStreak, syncAchievementsFromLocal, loadAchievementsFromServer, loadStatsFromServer } from './achievement-tracker.js';
@@ -335,6 +335,9 @@ window.PolyTask = {
     deleteUserTask: deleteUserTask,
     parseSmartInput: parseSmartInput,
     fireConfetti: fireConfetti,
+    showToast: showToast,
+    escapeHtml: escapeHtml,
+    sanitizeColor: sanitizeColor,
     calculateStreak: calculateStreak,
     clearCompletedTasks: clearCompletedTasks,
     autoRescheduleOverdueTasks: autoRescheduleOverdueTasks,

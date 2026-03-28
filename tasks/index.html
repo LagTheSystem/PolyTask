@@ -69,20 +69,6 @@
   </footer>
 
   <script>
-      // XSS protection: escape HTML entities in user-controlled strings
-      function escapeHtml(s) {
-          return String(s || '').replace(/[&<>"']/g, c => ({
-              '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
-          }[c]));
-      }
-
-      // Sanitize CSS color values (only allow safe formats)
-      function sanitizeColor(color) {
-          if (!color) return null;
-          const safe = /^(#[0-9a-fA-F]{3,8}|[a-zA-Z]+|rgba?\([^)]+\)|hsla?\([^)]+\)|var\(--[a-zA-Z0-9-]+\))$/;
-          return safe.test(String(color).trim()) ? String(color).trim() : null;
-      }
-
       let currentFilter = 'all';
       let allFetchedTasks = []; // Client-side cache
       let searchQuery = '';
@@ -158,9 +144,9 @@
               const priorityClass = (t.priority || 'medium').toLowerCase();
               const dateStr = t.due ? new Date(t.due).toLocaleDateString() : '';
               
-              const safeColor = sanitizeColor(t.color) || 'var(--muted)';
-              const categoryPill = t.category
-                ? `<span class="badge" style="background-color: ${safeColor}; color: white; opacity: 0.9; margin-left:8px;">${escapeHtml(t.category)}</span>`
+                            const safeColor = PolyTask.sanitizeColor(t.color) || 'var(--muted)';
+                            const categoryPill = t.category
+                                ? `<span class="badge" style="background-color: ${safeColor}; color: white; opacity: 0.9; margin-left:8px;">${PolyTask.escapeHtml(t.category)}</span>`
                 : '';
 
               el.innerHTML = `
@@ -170,7 +156,7 @@
                   </div>
                   <div style="flex:1; cursor: pointer;" onclick="openTaskDetails('${t.$id}')">
                       <div style="font-weight:500; font-size:1.05rem;">
-                         <span class="title">${escapeHtml(t.name)}</span>
+                         <span class="title">${PolyTask.escapeHtml(t.name)}</span>
                          ${categoryPill}
                       </div>
                       <div style="font-size:0.85rem; color:var(--muted); margin-top:0.2rem;">
@@ -180,7 +166,7 @@
                       </div>
                   </div>
                   <div class="task-meta">
-                      <span class="badge ${escapeHtml(priorityClass)}">${escapeHtml(t.priority || 'medium')}</span>
+                      <span class="badge ${PolyTask.escapeHtml(priorityClass)}">${PolyTask.escapeHtml(t.priority || 'medium')}</span>
                       <button class="icon-btn" onclick="duplicateTask('${t.$id}')" title="Duplicate" style="opacity:0.7;">📋</button>
                       ${t.archived ? '<button class="icon-btn" onclick="unarchiveTask(\'' + t.$id + '\')" title="Unarchive" style="opacity:0.7;">↩️</button>' : ''}
                       <button class="icon-btn" onclick="deleteTask('${t.$id}')" style="color:var(--coral); opacity:0.5;">&times;</button>
@@ -234,9 +220,7 @@
              PolyTask.listUserTasks().then(fresh => { allFetchedTasks = fresh; });
              
              // Show undo option
-             if (window.PolyTask?.showToast) {
-                 window.PolyTask.showToast('Task deleted', 'info', { label: 'Undo', action: () => undoDelete() });
-             }
+             PolyTask.showToast('Task deleted', 'info', { label: 'Undo', onClick: () => undoDelete() });
           } catch(e) { 
               console.error(e); 
               refreshTasks();
@@ -325,9 +309,7 @@
               if (newTask) {
                   allFetchedTasks.push(newTask);
                   renderList();
-                  if (window.PolyTask?.showToast) {
-                      window.PolyTask.showToast('Task duplicated', 'success');
-                  }
+                  PolyTask.showToast('Task duplicated', 'success');
               }
           } catch(e) {
               console.error(e);
@@ -341,9 +323,7 @@
                   task.archived = true;
                   await PolyTask.updateUserTask(id, { archived: true });
                   renderList();
-                  if (window.PolyTask?.showToast) {
-                      window.PolyTask.showToast('Task archived', 'info');
-                  }
+                  PolyTask.showToast('Task archived', 'info');
               }
           } catch(e) {
               console.error(e);
@@ -357,9 +337,7 @@
                   task.archived = false;
                   await PolyTask.updateUserTask(id, { archived: false });
                   renderList();
-                  if (window.PolyTask?.showToast) {
-                      window.PolyTask.showToast('Task restored', 'success');
-                  }
+                  PolyTask.showToast('Task restored', 'success');
               }
           } catch(e) {
               console.error(e);
@@ -506,20 +484,11 @@
              if(newTask) {
                  allFetchedTasks.push(newTask);
                  renderList();
-                 showToast('Task added!', 'success');
+                 PolyTask.showToast('Task added!', 'success');
              } else {
                  refreshTasks();
              }
-          } catch(e) { console.error(e); showToast('Failed to add task', 'error'); }
-      }
-
-      function showToast(msg) {
-          // Simple fallback toast
-          const div = document.createElement('div');
-          div.style.cssText = "position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#333;color:white;padding:12px 24px;border-radius:8px;";
-          div.textContent = msg;
-          document.body.appendChild(div);
-          setTimeout(() => div.remove(), 2000);
+          } catch(e) { console.error(e); PolyTask.showToast('Failed to add task', 'error'); }
       }
 
       function waitForPolyTask() {
@@ -548,9 +517,7 @@
           // Show keyboard shortcuts help on first visit
           if (!localStorage.getItem('shortcuts_seen')) {
               setTimeout(() => {
-                  if (window.PolyTask?.showToast) {
-                      window.PolyTask.showToast('💡 Press ? for keyboard shortcuts', 'info');
-                  }
+                  PolyTask.showToast('Press ? for keyboard shortcuts', 'info');
                   localStorage.setItem('shortcuts_seen', 'true');
               }, 2000);
           }
